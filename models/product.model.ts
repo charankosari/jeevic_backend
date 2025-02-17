@@ -9,7 +9,7 @@ interface IProduct {
     image_url: string[];
     category_id: string;
     subcategory_id: string;
-    meta_data: object;
+    meta_data: Record<string, string>;
     is_active: boolean;
     availability_count: number;
     created_at: Date;
@@ -27,8 +27,8 @@ const ProductSchema = new Schema({
     is_active: Boolean,
     is_out_of_stock: Boolean,
     availability_count: Number,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 ProductSchema.index.findByName = { by: 'name' };

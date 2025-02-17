@@ -12,8 +12,8 @@ interface IWishlist {
 const WishlistSchema = new Schema({
     user_id: String,
     product_id: String,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 WishlistSchema.index.findByUserId = { by: 'user_id' };

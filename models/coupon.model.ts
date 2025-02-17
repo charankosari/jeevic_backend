@@ -7,7 +7,7 @@ interface ICoupon {
     is_one_time: boolean;
     expires_on: Date;
     no_of_uses: number;
-    meta_data: object;
+    meta_data: Record<string, string>;
     created_at: Date;
     updated_at: Date;
 }
@@ -18,8 +18,8 @@ const CouponSchema = new Schema({
     expires_on: Date,
     no_of_uses: Number,
     meta_data: Object,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 CouponSchema.index.findByCode = { by: 'code' };

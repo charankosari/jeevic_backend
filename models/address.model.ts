@@ -22,8 +22,8 @@ const UserSchema = new Schema({
     postcode: String,
     phone_number: String,
     is_default: Boolean,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 UserSchema.index.findByUserId = { by: 'user_id' };

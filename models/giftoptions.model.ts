@@ -8,7 +8,7 @@ interface IGiftOptions {
     description: string;
     price: number;
     products: string[];
-    meta_data: object;
+    meta_data: Record<string, string>;
     is_active: boolean;
     created_at: Date;
     updated_at: Date;
@@ -22,8 +22,8 @@ const GiftOptionsSchema = new Schema({
     products: [String],
     meta_data: Object,
     is_active: Boolean,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 GiftOptionsSchema.index.findByName = { by: 'name' };

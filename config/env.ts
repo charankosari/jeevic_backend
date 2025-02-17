@@ -15,6 +15,8 @@ export const envSchema = z.object({
 	OTTOMAN_PASSWORD: z.string(),
 	JWT_SECRET: z.string(),
 	JWT_EXPIRES_IN: z.string(),
+    RAZORPAY_KEY_ID: z.string(),
+    RAZORPAY_KEY_SECRET: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

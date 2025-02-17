@@ -8,7 +8,7 @@ interface IOrder {
         product_id: string;
         quantity: number;
         price: number;
-        meta_data: object;
+        meta_data: Record<string, string>;
     }[],
     gift_options: string[];
     status: string;
@@ -25,7 +25,7 @@ interface IOrder {
     address_id: string;
     gift_info: {
         message: string;
-        meta_data: object;
+        meta_data: Record<string, string>;
     },
     meta_data: object,
     created_at: Date,
@@ -58,8 +58,8 @@ const OrderSchema = new Schema({
         meta_data: Object,
     },
     meta_data: Object,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 OrderSchema.index.findByUserId = { by: 'user_id' };

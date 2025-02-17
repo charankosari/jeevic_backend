@@ -12,8 +12,8 @@ interface ISubCategory {
 const SubCategorySchema = new Schema({
     name: String,
     category_id: String,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 SubCategorySchema.index.findByName = { by: 'name' };

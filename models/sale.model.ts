@@ -13,7 +13,7 @@ interface ISale {
     product_ids: string[];
     category_ids: string[];
     subcategory_ids: string[];
-    meta_data: object;
+    meta_data: Record<string, string>;
     created_at: Date;
     updated_at: Date;
 }
@@ -30,8 +30,8 @@ const SaleSchema = new Schema({
     category_ids: [String],
     subcategory_ids: [String],
     meta_data: Object,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 SaleSchema.index.findByName = { by: 'name' };

@@ -15,8 +15,8 @@ const ReviewSchema = new Schema({
     user_id: String,
     product_id: String,
     rating: Number,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 ReviewSchema.index.findByUserId = { by: 'user_id' };

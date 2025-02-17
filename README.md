@@ -1,4 +1,4 @@
-# syncoreecommerceapi
+# jeevic-api
 
 To install dependencies:
 

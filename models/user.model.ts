@@ -10,6 +10,9 @@ interface IUser {
     phone_number: string;
     profile_picture: string;
     points: number;
+    phone_otp: string;
+    email_otp: string;
+    role: string;
     is_email_verified: boolean;
     is_mobile_verified: boolean;
     created_at: Date;
@@ -17,17 +20,20 @@ interface IUser {
 }
 
 const UserSchema = new Schema({
+    first_name: String,
+    last_name: String,
     email: String,
     country_code: String,
     phone_number: String,
-    hash: String,
-    salt: String,
-    first_name: String,
-    last_name: String,
-    is_email_verified: Boolean,
-    is_mobile_verified: Boolean,
-    created_at: Date,
-    updated_at: Date,
+    profile_picture: String,
+    points: { type: Number, default: 0 },
+    phone_otp: String,
+    email_otp: String,
+    role: { type: String, default: 'user' },
+    is_email_verified: { type: Boolean, default: false },
+    is_mobile_verified: { type: Boolean, default: false },
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 UserSchema.index.findByEmail = { by: 'email' };

@@ -1,0 +1,89 @@
+import { type Context } from 'hono';
+
+import { UserService } from '../services/user.service';
+
+export class AuthController {
+    public static readonly requestAccountAccess = async (ctx: Context) => {
+        try {
+            const { country_code, phone_number } = await ctx.req.json();
+
+            const response = await UserService.requestAccountAccess(
+                country_code,
+                phone_number,
+            );
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+
+    public static readonly verifyAccountAccess = async (ctx: Context) => {
+        try {
+            const { country_code, phone_number, otp } = await ctx.req.json();
+
+            const response = await UserService.verifyAccountAccess(
+                country_code,
+                phone_number,
+                otp,
+            );
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+
+    public static readonly getUser = async (ctx: Context) => {
+        try {
+            const user_id = ctx.get('user_id');
+
+            const response = await UserService.getUser(user_id);
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+
+    public static readonly updateUser = async (ctx: Context) => {
+        try {
+            const user_id = ctx.get('user_id');
+            const { first_name, last_name, email, profile_picture } = await ctx.req.json();
+
+            const response = await UserService.updateUser(
+                user_id,
+                {
+                    first_name,
+                    last_name,
+                    email,
+                    profile_picture,
+                },
+            );
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+}

@@ -1,7 +1,10 @@
 {
-  "name": "syncoreecommerceapi",
+  "name": "jeevic-api",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun run --hot index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "prettier": "^3.4.2"
@@ -13,6 +16,7 @@
     "hono": "^4.7.0",
     "ottoman": "^2.5.1",
     "pino": "^9.6.0",
+    "razorpay": "^2.9.5",
     "zod": "^3.24.1"
   }
 }

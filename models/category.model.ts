@@ -12,8 +12,8 @@ interface ICategory {
 const CategorySchema = new Schema({
     name: String,
     image_url: [String],
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 CategorySchema.index.findByName = { by: 'name' };

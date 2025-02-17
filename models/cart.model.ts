@@ -6,7 +6,7 @@ interface ICart {
     user_id: string;
     product_id: string;
     quantity: number;
-    meta_data: object;
+    meta_data: Record<string, string>;
     created_at: Date;
     updated_at: Date;
 }
@@ -16,8 +16,8 @@ const CartSchema = new Schema({
     product_id: String,
     quantity: Number,
     meta_data: Object,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: () => new Date() },
+    updated_at: { type: Date, default: () => new Date() },
 });
 
 CartSchema.index.findByUserId = { by: 'user_id' };
