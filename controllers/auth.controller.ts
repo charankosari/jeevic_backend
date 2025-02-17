@@ -64,14 +64,13 @@ export class AuthController {
     public static readonly updateUser = async (ctx: Context) => {
         try {
             const user_id = ctx.get('user_id');
-            const { first_name, last_name, email, profile_picture } = await ctx.req.json();
+            const { first_name, last_name, profile_picture } = await ctx.req.json();
 
             const response = await UserService.updateUser(
                 user_id,
                 {
                     first_name,
                     last_name,
-                    email,
                     profile_picture,
                 },
             );
@@ -86,4 +85,46 @@ export class AuthController {
             }
         }
     };
+
+    public static readonly setEmailForVerification = async (ctx: Context) => {
+        try {
+            const user_id = ctx.get('user_id');
+            const { email } = await ctx.req.json();
+
+            const response = await UserService.setEmailForVerification(
+                user_id,
+                email,
+            );
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    }
+
+    public static readonly verifyEmail = async (ctx: Context) => {
+        try {
+            const user_id = ctx.get('user_id');
+            const { otp } = await ctx.req.json();
+
+            const response = await UserService.verifyEmail(
+                user_id,
+                otp,
+            );
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    }
 }

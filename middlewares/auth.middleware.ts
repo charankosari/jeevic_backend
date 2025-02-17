@@ -16,9 +16,15 @@ export const authMiddleware = () : MiddlewareHandler => {
                 }, 401);
             }
 
-            const { user_id } = await verify(token, config.JWT_SECRET, 'HS512') as { user_id: string };
+            const {
+                sub,
+                role
+            } = await verify(token, config.JWT_SECRET, 'HS512') as {
+                sub: string,
+                role: 'user' | 'admin',
+            };
 
-            const user = await UserService.getUser(user_id);
+            const user = await UserService.getUser(sub);
 
             if (!user) {
                 return ctx.json({
@@ -28,6 +34,7 @@ export const authMiddleware = () : MiddlewareHandler => {
             }
 
             ctx.set('user_id', user.id);
+            ctx.set('user_role', role);
 
             return await next();
         }

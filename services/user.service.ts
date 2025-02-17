@@ -85,7 +85,8 @@ export class UserService {
 
             // generate a JWT token
             const access_token = await sign({
-                user_id: requestedUser.id,
+                sub: requestedUser.id,
+                role: requestedUser.role,
                 exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30), // 30 days
             }, config.JWT_SECRET, 'HS512');
 
@@ -127,4 +128,51 @@ export class UserService {
             message: 'User updated successfully',
         }
     }
+
+    public static readonly setEmailForVerification = async (
+        user_id: string,
+        email: string,
+    ) => {
+        const otp = generateOTP();
+
+        await User.updateById(user_id, {
+            email,
+            email_otp: otp,
+            updated_at: new Date(),
+        });
+
+        // TODO: Send OTP to the user's email
+    
+        return {
+            message: 'Email verification initiated successfully',
+        }
+    }
+
+    public static readonly verifyEmail = async (
+        user_id: string,
+        otp: string,
+    ) => {
+        const requestedUser = await User.findOne({
+            id: user_id,
+            email_otp: otp,
+        }).catch(() => null);
+
+        if (!requestedUser) {
+            return {
+                message: 'Invalid OTP',
+            }
+        }
+
+        else {
+            // update the existing user
+            await User.updateById(requestedUser.id, {
+                is_email_verified: true,
+                updated_at: new Date(),
+            });
+        }
+
+        return {
+            message: 'Email verified successfully',
+        }
+    };
 }
