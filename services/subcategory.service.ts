@@ -64,4 +64,14 @@ export class SubCategoryService {
             id: subcategory_id,
         });
     }
+
+    public static readonly getSubCategoriesByCategory = async (
+        category_id: string,
+    ) : Promise<ISubCategory[]>=> {
+        return await SubCategory.find({
+            category_id,
+        }).then((subcategories) => {
+            return subcategories.rows;
+        });
+    }
 }

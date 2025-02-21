@@ -34,6 +34,7 @@ export class GiftCardService {
             code,
             expires_on,
             meta_data,
+            is_redeemed: false,
             created_at: new Date(),
             updated_at: new Date(),
         });
@@ -46,10 +47,12 @@ export class GiftCardService {
         {
             code,
             expires_on,
+            is_redeemed,
             meta_data
         }: {
             code: string;
             expires_on: Date;
+            is_redeemed: boolean;
             meta_data: Record<string, any>;
         }
     ) : Promise<void>=> {
@@ -59,6 +62,7 @@ export class GiftCardService {
             code,
             meta_data,
             expires_on,
+            is_redeemed,
             updated_at: new Date(),
         });
     }
@@ -68,6 +72,29 @@ export class GiftCardService {
     ) : Promise<void>=> {
         await GiftCard.removeMany({
             id: giftcard_id,
+        });
+    }
+
+    public static readonly getGiftCardByCode = async (
+        code: string,
+    ) : Promise<IGiftCard | null>=> {
+        return await GiftCard
+            .find({
+                code,
+            })
+            .then((giftCard) => {
+                return giftCard.rows[0] || null;
+            });
+    }
+
+    public static readonly redeemGiftCard = async (
+        giftcard_id: string,
+    ) : Promise<void>=> {
+        await GiftCard.updateMany({
+            id: giftcard_id,
+        }, {
+            is_redeemed: true,
+            updated_at: new Date(),
         });
     }
 }

@@ -107,7 +107,7 @@ export class ProductService {
         {
             query,
         }: {
-            query?: string,
+            query: string,
         },
         {
             limit,

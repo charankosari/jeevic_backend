@@ -1,6 +1,7 @@
 {
   "name": "jeevic-api",
   "module": "index.ts",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "bun run --hot index.ts"
