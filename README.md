@@ -1,15 +1,18 @@
 # jeevic-api
 
-To install dependencies:
+Ecommerce API built with Bun, TypeScript, and Couchbase.
 
-```bash
-bun install
-```
+## Tech Stack
 
-To run:
+- Bun
+- TypeScript
+- Couchbase
+- Ottomanjs
+- Zod
+- JWT
+- Docker
+- Docker Compose
 
-```bash
-bun run index.ts
-```
+## Integrations
 
-This project was created using `bun init` in bun v1.2.1. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- Razorpay

@@ -3,8 +3,22 @@ import { cors } from "hono/cors";
 import { showRoutes } from "hono/dev";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
+import { poweredBy } from "hono/powered-by";
 
 import { authRoute } from "../routes/auth.route"
+import { addressRoute } from "../routes/address.route";
+import { categoryRoute } from "../routes/category.route";
+import { cartRoute } from "../routes/cart.route";
+import { couponRoute } from "../routes/coupon.route";
+import { giftCardRoute } from "../routes/giftcard.route";
+import { giftoptionRoute } from "../routes/giftoptions.route";
+import { notificationRoute } from "../routes/notification.route";
+import { orderRoute } from "../routes/order.route";
+import { productRoute } from "../routes/product.route";
+import { reviewRoute } from "../routes/review.route";
+import { saleRoute } from "../routes/sale.route";
+import { subcategoryRoute } from "../routes/subcategory.route";
+import { wishlistRoute } from "../routes/wishlist.route";
 
 const app = new Hono();
 
@@ -16,8 +30,9 @@ app.use(cors({
     exposeHeaders: ['Content-Type', 'Content-Length'],
 }));
 app.use(prettyJSON());
+app.use(poweredBy());
 
-app.get('/health', async (c) => {
+app.all('/health', async (c) => {
     return c.text('OK!')
 });
 
@@ -28,6 +43,19 @@ app.get('/', async (c) => {
 });
 
 app.route('/auth', authRoute);
+app.route('/address', addressRoute);
+app.route('/cart', cartRoute);
+app.route('/category', categoryRoute);
+app.route('/coupon', couponRoute);
+app.route('/giftcard', giftCardRoute);
+app.route('/giftoption', giftoptionRoute);
+app.route('/notification', notificationRoute);
+app.route('/order', orderRoute);
+app.route('/product', productRoute);
+app.route('/review', reviewRoute);
+app.route('/sale', saleRoute);
+app.route('/subcategory', subcategoryRoute);
+app.route('/wishlist', wishlistRoute);
 
 showRoutes(app);
 

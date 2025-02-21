@@ -86,10 +86,29 @@ export class CouponService {
     public static readonly applyCoupon = async (
         coupon_id: string,
     ) : Promise<void>=> {
+        const coupon = await Coupon.find({
+            id: coupon_id,
+        }).then((coupon) => {
+            return coupon.rows[0];
+        });
+
         await Coupon.updateMany({
             id: coupon_id,
         }, {
-            no_of_uses: Coupon.no_of_uses - 1,
+            no_of_uses: coupon.no_of_uses - 1,
+            updated_at: new Date(),
         });   
+    }
+
+    public static readonly getCouponByCode = async (
+        code: string,
+    ) : Promise<ICoupon | null>=> {
+        return await Coupon
+            .find({
+                code,
+            })
+            .then((coupon) => {
+                return coupon.rows[0] || null;
+            });
     }
 }

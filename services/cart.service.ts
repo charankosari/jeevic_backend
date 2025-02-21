@@ -1,4 +1,6 @@
 import { Cart, type ICart } from '../models/cart.model';
+import { NotificationService } from './notification.service';
+import { ProductService } from './product.service';
 
 export class CartService {
     // AddToCart
@@ -16,6 +18,19 @@ export class CartService {
             created_at: new Date(),
             updated_at: new Date(),
         });
+
+        const product = await ProductService.getProductById(product_id);
+
+        // Add Notification
+        await NotificationService.createNotification({
+            user_id,
+            message: `Product added to cart: ${product?.name}`,
+            meta_data: {
+                product_id,
+                quantity: quantity.toString(),
+            },
+            title: 'Product Added to Cart',
+        })
 
         return data.id;
     }

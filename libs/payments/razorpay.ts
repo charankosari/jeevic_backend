@@ -37,7 +37,6 @@ const capturePayment = async ({
     payment_id,
     amount,
 }: {
-    order_id: string;
     payment_id: string;
     amount: number;
 }) => {
@@ -60,4 +59,8 @@ const orderStatus = async ({
     return order;
 }
 
-export { createOrder, capturePayment, orderStatus };
+export const RazorpayService = {
+    createOrder,
+    capturePayment,
+    orderStatus,
+};

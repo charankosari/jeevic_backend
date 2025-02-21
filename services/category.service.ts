@@ -7,7 +7,7 @@ export class CategoryService {
         });
     }
 
-    public static readonly getCategoryById = async (
+    public static readonly getCategory = async (
         category_id: string,
     ) : Promise<ICategory | null>=> {
         return await Category

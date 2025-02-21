@@ -187,4 +187,22 @@ export class SaleService {
             return [];
         }
     }
+
+    // Get Discounted Price of a product
+    public static readonly getDiscountedPrice = async (
+        product_id: string,
+        price: number,
+    ) : Promise<number>=> {
+        const sales = await SaleService.getCurrentSalesOverProduct(product_id);
+
+        if (sales.length === 0) {
+            return price;
+        }
+
+        const discount = sales.reduce((acc, sale) => {
+            return Math.max(acc, sale.discount_percentage);
+        }, 0);
+
+        return price - (price * discount / 100);
+    }
 }
