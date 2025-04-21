@@ -19,13 +19,15 @@ import { reviewRoute } from "../routes/review.route";
 import { saleRoute } from "../routes/sale.route";
 import { subcategoryRoute } from "../routes/subcategory.route";
 import { wishlistRoute } from "../routes/wishlist.route";
+import { dishRoute } from "../routes/dish.route";
+import { dineInRoute } from "../routes/dine_in.route";
 
 const app = new Hono();
 
 app.use(logger());
 app.use(cors({
     origin: '*',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposeHeaders: ['Content-Type', 'Content-Length'],
 }));
@@ -56,6 +58,8 @@ app.route('/review', reviewRoute);
 app.route('/sale', saleRoute);
 app.route('/subcategory', subcategoryRoute);
 app.route('/wishlist', wishlistRoute);
+app.route('/dish', dishRoute);
+app.route('/dine-in', dineInRoute);
 
 showRoutes(app);
 

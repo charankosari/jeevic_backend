@@ -1,11 +1,21 @@
 import { Review, type IReview } from "../models/review.model";
 
 export class ReviewService {
-    public static readonly getReviews = async (
+    public static readonly getReviewsByProduct = async (
         product_id: string,
     ) : Promise<IReview[]>=> {
         return await Review.find({
             product_id,
+        }).then((reviews) => {
+            return reviews.rows;
+        });
+    }
+
+    public static readonly getReviewsByDish = async (
+        dish_id: string,
+    ) : Promise<IReview[]>=> {
+        return await Review.find({
+            dish_id,
         }).then((reviews) => {
             return reviews.rows;
         });
@@ -19,7 +29,7 @@ export class ReviewService {
                 id: review_id,
             })
             .then((review) => {
-                return review.rows[0] || null;
+                return review.rows[0] ?? null;
             });
     }
 
@@ -81,10 +91,24 @@ export class ReviewService {
         });
     }
 
-    public static readonly getAverageRating = async (
+    public static readonly getAverageRatingForProduct = async (
         product_id: string,
     ) : Promise<number>=> {
-        const reviews = await this.getReviews(product_id);
+        const reviews = await this.getReviewsByProduct(product_id);
+        if (reviews.length === 0) {
+            return 0;
+        }
+        const totalRating = reviews.reduce((acc, review) => {
+            return acc + review.rating;
+        }, 0);
+
+        return totalRating / reviews.length;
+    }
+
+    public static readonly getAverageRatingForDish = async (
+        dish_id: string,
+    ) : Promise<number>=> {
+        const reviews = await this.getReviewsByDish(dish_id);
         if (reviews.length === 0) {
             return 0;
         }

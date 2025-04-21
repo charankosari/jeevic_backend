@@ -64,7 +64,7 @@ export class AddressController {
         try {
             const user_id = ctx.get('user_id');
 
-            const { address_id } = await ctx.req.json();
+            const { address_id } = ctx.req.param();
 
             await AddressService.deleteAddress(
                 user_id,

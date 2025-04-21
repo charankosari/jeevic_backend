@@ -61,6 +61,10 @@ export class CartService {
     ) : Promise<ICart[]>=> {
         return await Cart.find({
             user_id,
+        }, {
+            sort: {
+                updated_at: "DESC"
+            },
         }).then((cart) => {
             return cart.rows;
         });

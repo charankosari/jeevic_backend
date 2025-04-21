@@ -79,6 +79,10 @@ export class AddressService {
     ) : Promise<IAddress[]>=> {
         return await Address.find({
             user_id,
+        }, {
+            sort: {
+                updated_at: "DESC"
+            },
         }).then((addresses) => {
             return addresses.rows;
         });

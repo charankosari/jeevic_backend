@@ -7,7 +7,24 @@ export class ReviewController {
         try {
             const { product_id } = ctx.req.param();
 
-            const response = await ReviewService.getReviews(product_id);
+            const response = await ReviewService.getReviewsByProduct(product_id);
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+
+    public static readonly getReviewsByDish = async (ctx: Context) => {
+        try {
+            const { product_id } = ctx.req.param();
+
+            const response = await ReviewService.getReviewsByDish(product_id);
 
             return ctx.json(response);
         }
@@ -108,11 +125,28 @@ export class ReviewController {
         }
     };
 
-    public static readonly getAverageRating = async (ctx: Context) => {
+    public static readonly getAverageRatingForProduct = async (ctx: Context) => {
         try {
             const { product_id } = ctx.req.param();
 
-            const response = await ReviewService.getAverageRating(product_id);
+            const response = await ReviewService.getAverageRatingForProduct(product_id);
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+
+    public static readonly getAverageRatingForDish = async (ctx: Context) => {
+        try {
+            const { dish_id } = ctx.req.param();
+
+            const response = await ReviewService.getAverageRatingForDish(dish_id);
 
             return ctx.json(response);
         }
