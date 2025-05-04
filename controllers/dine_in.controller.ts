@@ -555,8 +555,10 @@ export class DineInController {
 
     public static readonly createUserEndCheckout = async (c: Context) => {
         try {
-            const data = await c.req.json();
-            const order = await DineInService.createUserEndCheckout(data);
+            const {
+                booking_id
+            } = await c.req.json();
+            const order = await DineInService.createUserEndCheckout(booking_id);
             return c.json({
                 success: true,
                 data: order,

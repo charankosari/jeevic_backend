@@ -33,9 +33,6 @@ dineInRoute.post('/checkouts', DineInController.createUserEndCheckout);
 
 dineInRoute.get('/available-tables', DineInController.getAvailableTables);
 
-
-
-
 dineInRoute.use(roleMiddleware(true));
 
 dineInRoute.get('/checkouts', DineInController.getCheckouts);
