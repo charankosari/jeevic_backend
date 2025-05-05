@@ -3,6 +3,8 @@ import { DineInTables, type IDineInTables } from '../models/dine_in_table.model'
 import { DineInOrders, type IDineInOrders } from '../models/dine_in_order.model';
 import { DineInTableBookings, type IDineInTableBookings } from '../models/dine_in_table_booking.model';
 import { Dish, type IDish } from '../models/dish.model';
+import { UserService } from './user.service';
+import type { IUser } from '../models/user.model';
 
 export class DineInService {
     // tables
@@ -374,6 +376,18 @@ export class DineInService {
         });
     }
 
+    // markOrderAsPreparing
+    public static readonly markOrderAsPreparing = async (
+        order_id: string,
+    ) : Promise<void>=> {
+        await DineInOrders.updateMany({
+            id: order_id,
+        }, {
+            order_status: 'preparing',
+            updated_at: new Date(),
+        });
+    }
+
     // checkout
     public static readonly createUserEndCheckout = async (
         booking_id: string,
@@ -384,6 +398,7 @@ export class DineInService {
         } = await DineInOrders.find({
             booking_id,
         });
+        
         const order_ids = orders.rows.map((order) => order.id);
         const dish_ids = orders.rows.map((order) => order.dish_id);
 
@@ -392,6 +407,8 @@ export class DineInService {
         if (!booking) {
             throw new Error('Booking not found');
         }
+
+        const table = await DineInTables.findById(booking.table_id);
 
         const dishs : {
             rows: IDish[];
@@ -410,6 +427,21 @@ export class DineInService {
             }
             total_amount += dish.price * order.quantity;
         }
+
+        // Update booking as is_ready_to_bill true
+        await DineInTableBookings.updateById(booking_id, {
+            is_ready_to_bill: true,
+            updated_at: new Date(),
+        });
+
+        // mark table for cleaning
+        await DineInTables.updateById(booking.table_id, {
+            meta_data: {
+                ...table.meta_data,
+                to_be_cleaned: true,
+            },
+            updated_at: new Date(),
+        });
      
         // create a new checkout
         return await DineInCheckout.create({
@@ -488,5 +520,200 @@ export class DineInService {
         });
 
         return data.rows;
+    }
+
+    // Get All Reservations
+    public static readonly getReservations = async (
+        page: number,
+        limit: number,
+    ) : Promise<{
+        reservations: IReservation[];
+        totalCount: number;
+    }>=> {
+        const data : {
+            rows: IDineInTableBookings[];
+        } = await DineInTableBookings.find({
+            is_completed: true,
+        }, {
+            sort: {
+                created_at: 'DESC',
+            },
+            skip: (page - 1) * limit,
+            limit,
+        });
+
+        const totalCount: number = await DineInTableBookings.count();
+        
+        const reservations: IReservation[] = await Promise.all(data.rows.map(async (booking) => {
+            const table = await DineInTables.findOne({
+                id: booking.table_id,
+            });
+            const user = await UserService.getUser(booking.user_id) as IUser;
+            
+            let status = 'pending';
+            if (booking.is_completed) {
+                status = 'completed';
+            } else if (booking.is_cancelled) {
+                status = 'cancelled';
+            }
+
+            return {
+                id: booking.id,
+                name: user?.first_name + " " + user?.last_name,
+                phone: user.country_code + user.phone_number,
+                status,
+                people: table.capacity,
+                table: table.table_number,
+            }
+        }));
+
+        return {
+            reservations,
+            totalCount,
+        };
+    }
+
+    public static readonly getTableStats = async () : Promise<IDineInTableStats[]> => {
+        const tables : {
+            rows: IDineInTables[];
+        } = await DineInTables.find({});
+    
+        const bookings : {
+            rows: IDineInTableBookings[];
+        } = await DineInTableBookings.find({
+            is_cancelled: false,
+        });
+    
+        const orders : {
+            rows: IDineInOrders[];
+        } = await DineInOrders.find({
+            booking_id: {
+                $in: bookings.rows.map((booking) => booking.id),
+            },
+        });
+    
+        const checkouts : {
+            rows: IDineInCheckout[];
+        } = await DineInCheckout.find({
+            booking_id: {
+                $in: bookings.rows.map((booking) => booking.id),
+            },
+        });
+    
+        const dishs : {
+            rows: IDish[];
+        } = await Dish.find({});
+    
+        const tableStats: IDineInTableStats[] = await Promise.all(tables.rows.map(async (table) => {
+            // Find active booking for this table (not cancelled, not completed)
+            const activeBooking = bookings.rows.find(
+                (booking) => booking.table_id === table.id && !booking.is_cancelled && !booking.is_completed
+            ) as IDineInTableBookings;
+            
+            // Find the most recent booking for this table
+            const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.id);
+            const lastBooking = allTableBookings.sort((a, b) => 
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            )[0];
+            
+            // Find checkout for the last booking
+            const lastCheckout = lastBooking ? 
+                checkouts.rows.find(checkout => checkout.booking_id === lastBooking.id) : 
+                null;
+            
+            // Find orders for the active booking
+            const tableOrders = activeBooking ? 
+                orders.rows.filter(order => order.booking_id === activeBooking.id) : 
+                [];
+            
+            // Calculate items and total amount
+            const items = tableOrders.map(order => {
+                const dish = dishs.rows.find(d => d.id === order.dish_id);
+                return {
+                    name: dish ? dish.name : "Unknown Item",
+                    quantity: order.quantity,
+                    price: dish ? dish.price : 0,
+                    order_id: order.id,
+                    order_status: order.order_status,
+                    dish_id: order.dish_id,
+                    total: (dish ? dish.price : 0) * order.quantity
+                };
+            });
+            
+            const total_amount = items.reduce((sum, item) => sum + item.total, 0);
+            
+            // Determine table status based on the specified conditions
+            let status = "Untouched";
+
+            // Check if table is currently booked
+            if (activeBooking) {
+                if (activeBooking.is_ready_to_bill) {
+                    status = "Ready to Bill";
+                } else {
+                    status = "Active";
+                }
+                
+                return {
+                    table_number: table.table_number,
+                    status,
+                    booked_at: new Date(activeBooking.created_at).toISOString(),
+                    items, // Show items for active or ready-to-bill tables
+                    total_amount
+                };
+            }
+
+            // Check if table needs cleaning
+            if (table.meta_data && (table.meta_data as any).to_be_cleaned === true) {
+                status = "To be Cleaned";
+                return {
+                    table_number: table.table_number,
+                    status,
+                    booked_at: "",
+                    items: [], // Don't show items for tables that need cleaning
+                    total_amount: 0
+                };
+            }
+            
+            // If table is not booked, check if last booking's checkout is checked out
+            if (lastBooking && lastCheckout && lastCheckout.is_checked_out) {
+                return {
+                    table_number: table.table_number,
+                    status,
+                    booked_at: "",
+                    items: [], // Don't show items for untouched tables
+                    total_amount: 0
+                };
+            }
+            
+            // Default case
+            return {
+                table_number: table.table_number,
+                status,
+                booked_at: "",
+                items: [],
+                total_amount: 0
+            };
+        }));
+    
+        return tableStats;
+    }
+
+    // markTableAsCleaned 
+    public static readonly markTableAsCleaned = async (
+        table_id: string,
+    ) : Promise<void>=> {
+        const table = await DineInTables.findById(table_id);
+        if (!table) {
+            throw new Error("Table not found");
+        }
+        await DineInTables.updateMany({
+            id: table_id,
+        }, {
+            meta_data: {
+                ...table.meta_data,
+                to_be_cleaned: false,
+            },
+            updated_at: new Date(),
+        });
     }
 }

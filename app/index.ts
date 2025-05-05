@@ -21,6 +21,7 @@ import { subcategoryRoute } from "../routes/subcategory.route";
 import { wishlistRoute } from "../routes/wishlist.route";
 import { dishRoute } from "../routes/dish.route";
 import { dineInRoute } from "../routes/dine_in.route";
+import { uploadRoute } from "../routes/upload.route";
 
 const app = new Hono();
 
@@ -60,6 +61,7 @@ app.route('/subcategory', subcategoryRoute);
 app.route('/wishlist', wishlistRoute);
 app.route('/dish', dishRoute);
 app.route('/dine-in', dineInRoute);
+app.route('/upload', uploadRoute);
 
 showRoutes(app);
 

@@ -31,9 +31,12 @@ dineInRoute.get('/checkouts/user/:user_id', DineInController.getCheckoutByUserId
 dineInRoute.get('/checkouts/table/:table_id', DineInController.getCheckoutByTableId);
 dineInRoute.post('/checkouts', DineInController.createUserEndCheckout);
 
-dineInRoute.get('/available-tables', DineInController.getAvailableTables);
+dineInRoute.post('/available-tables', DineInController.getAvailableTables);
 
 dineInRoute.use(roleMiddleware(true));
+
+dineInRoute.get('/table-stats', DineInController.getTableStats);
+dineInRoute.get('/reservations', DineInController.getReservations);
 
 dineInRoute.get('/checkouts', DineInController.getCheckouts);
 dineInRoute.patch('/checkouts/:checkout_id', DineInController.updateCheckout);
@@ -42,6 +45,7 @@ dineInRoute.delete('/checkouts/:checkout_id', DineInController.deleteCheckout);
 dineInRoute.get('/orders', DineInController.getOrders);
 dineInRoute.post('/orders/ready/:order_id', DineInController.markOrderAsReady);
 dineInRoute.post('/orders/serve/:order_id', DineInController.markOrderAsServed);
+dineInRoute.post('/orders/prepare/:order_id', DineInController.markOrderAsPreparing);
 dineInRoute.patch('/orders/:order_id', DineInController.updateOrder);
 dineInRoute.delete('/orders/:order_id', DineInController.deleteOrder);
 
@@ -51,5 +55,6 @@ dineInRoute.delete('/bookings/:booking_id', DineInController.deleteBooking);
 dineInRoute.post('/tables', DineInController.createTable);
 dineInRoute.patch('/tables/:table_id', DineInController.updateTable);
 dineInRoute.delete('/tables/:table_id', DineInController.deleteTable);
+dineInRoute.post('/tables/cleaned/:table_id', DineInController.markTableAsCleaned);
 
 export { dineInRoute };

@@ -553,6 +553,24 @@ export class DineInController {
         }
     };
 
+    public static readonly markOrderAsPreparing = async (c: Context) => {
+        try {
+            const order_id = c.req.param('order_id');
+            await DineInService.markOrderAsPreparing(order_id);
+            return c.json({
+                success: true,
+            });
+        }
+        catch (err) {
+            if(err instanceof Error){
+                return c.json({
+                    success: false,
+                    message: err.message,
+                }, 500);
+            }
+        }
+    };
+
     public static readonly createUserEndCheckout = async (c: Context) => {
         try {
             const {
@@ -695,6 +713,67 @@ export class DineInController {
             return c.json({
                 success: true,
                 data: checkout,
+            });
+        }
+        catch (err) {
+            if(err instanceof Error){
+                return c.json({
+                    success: false,
+                    message: err.message,
+                }, 500);
+            }
+        }
+    };
+
+    // getReservations
+    public static readonly getReservations = async (c: Context) => {
+        try {
+            const { page, limit } = c.req.query();
+            const pageNumber = parseInt(page) || 0;
+            const limitNumber = parseInt(limit) || 10;
+            const data = await DineInService.getReservations(pageNumber, limitNumber);
+            return c.json({
+                success: true,
+                data,
+            });
+        }
+        catch (err) {
+            if(err instanceof Error){
+                return c.json({
+                    success: false,
+                    message: err.message,
+                }, 500);
+            }
+        }
+    };
+
+    // getTableStats
+    public static readonly getTableStats = async (c: Context) => {
+        try {
+            const stats = await DineInService.getTableStats();
+            return c.json({
+                success: true,
+                data: stats,
+            });
+        }
+        catch (err) {
+            if(err instanceof Error){
+                return c.json({
+                    success: false,
+                    message: err.message,
+                }, 500);
+            }
+        }
+    };
+
+    // markTableAsCleaned
+    public static readonly markTableAsCleaned = async (c: Context) => {
+        try {
+            const table_id = c.req.param('table_id');
+            await DineInService.markTableAsCleaned(table_id);
+            return c.json({
+                success: true,
+                message: "Table marked as cleaned",
             });
         }
         catch (err) {
