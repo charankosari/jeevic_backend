@@ -658,7 +658,9 @@ export class DineInService {
                     status,
                     booked_at: new Date(activeBooking.created_at).toISOString(),
                     items, // Show items for active or ready-to-bill tables
-                    total_amount
+                    total_amount,
+                    checkout_id: lastCheckout ? lastCheckout.id : null,
+                    booking_id: activeBooking.id
                 };
             }
 

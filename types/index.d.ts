@@ -31,4 +31,6 @@ interface IDineInTableStats {
         total: number
     }[]
     total_amount: number
+    booking_id?: string
+    checkout_id?: string | null 
 }
