@@ -232,6 +232,7 @@ export class DineInService {
             id: booking_id,
         }, {
             is_completed: true,
+            to_time: new Date(),
             updated_at: new Date(),
         });
     }
@@ -485,15 +486,13 @@ export class DineInService {
         checkout_id: string,
         data: Partial<IDineInCheckout>,
     ) : Promise<IDineInCheckout | null>=> {
-        return await DineInCheckout.updateOne({
-            id: checkout_id,
-        }, data);
+        return await DineInCheckout.updateById(checkout_id, data);
     }
 
     public static readonly deleteCheckout = async (
         checkout_id: string,
     ) : Promise<boolean>=> {
-        return await DineInCheckout.deleteOne({
+        return await DineInCheckout.findOneAndRemove({
             id: checkout_id,
         });
     }
