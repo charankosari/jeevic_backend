@@ -4,7 +4,7 @@ import { config } from './env';
 const ottoman = new Ottoman({});
 
 const initDB = async () => {
-	await ottoman.connect({
+	const db = await ottoman.connect({
 		bucketName: config.OTTOMAN_BUCKET_NAME,
 		connectionString: config.OTTOMAN_CONNECTION_STRING,
 		username: config.OTTOMAN_USERNAME,
