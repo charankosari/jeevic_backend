@@ -179,6 +179,7 @@ export class DineInController {
                 to_time,
                 number_of_people,
             } = await c.req.json();
+            
             const booking = await DineInService.createBooking({
                 table_id,
                 user_id,

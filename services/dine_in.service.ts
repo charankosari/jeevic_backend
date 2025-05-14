@@ -130,6 +130,26 @@ export class DineInService {
             is_completed?: boolean;
         },
     ) : Promise<IDineInTableBookings>=> {
+        // check if table is already booked
+        const preBooking : {
+            rows: IDineInTableBookings[];
+        } = await DineInTableBookings.find({
+            table_id,
+            from_time: {
+                $lte: to_time ?? new Date(),
+            },
+            to_time: {
+                $gte: from_time ?? new Date(),
+            },
+            is_completed: false,
+            is_cancelled: false,
+            is_confirmed: false,
+        });
+
+        if (preBooking.rows.length > 0) {
+            throw new Error("Table is already booked");
+        }
+
         return await DineInTableBookings.create({
             table_id,
             user_id,

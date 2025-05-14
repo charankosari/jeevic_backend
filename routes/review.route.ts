@@ -10,7 +10,8 @@ reviewRoute.use(authMiddleware());
 reviewRoute.get('/p/:product_id', ReviewController.getReviewsByProduct);
 reviewRoute.get('/d/:dish_id', ReviewController.getReviewsByDish);
 reviewRoute.get('/:review_id', ReviewController.getReview);
-reviewRoute.post('/', ReviewController.createReview);
+reviewRoute.post('/p', ReviewController.createReview);
+reviewRoute.post('/d', ReviewController.createDishReview);
 reviewRoute.patch('/:review_id', ReviewController.updateReview);
 reviewRoute.delete('/:review_id', ReviewController.deleteReview);
 

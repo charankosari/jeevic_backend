@@ -22,9 +22,9 @@ export class ReviewController {
 
     public static readonly getReviewsByDish = async (ctx: Context) => {
         try {
-            const { product_id } = ctx.req.param();
+            const { dish_id } = ctx.req.param();
 
-            const response = await ReviewService.getReviewsByDish(product_id);
+            const response = await ReviewService.getReviewsByDish(dish_id);
 
             return ctx.json(response);
         }
@@ -63,6 +63,30 @@ export class ReviewController {
             const response = await ReviewService.createReview({
                 user_id,
                 product_id,
+                rating,
+                comment
+            });
+
+            return ctx.json(response);
+        }
+        catch(error) {
+            if (error instanceof Error) {
+                return ctx.json({
+                    message: error.message,
+                }, 400);
+            }
+        }
+    };
+
+    public static readonly createDishReview = async (ctx: Context) => {
+        try {
+            const { dish_id, rating, comment } = await ctx.req.json();
+            
+            const user_id = ctx.get('user_id');
+
+            const response = await ReviewService.createDishReview({
+                user_id,
+                dish_id,
                 rating,
                 comment
             });

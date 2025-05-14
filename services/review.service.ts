@@ -58,6 +58,31 @@ export class ReviewService {
         return data.id;
     }
 
+    public static readonly createDishReview = async (
+        {
+            user_id,
+            dish_id,
+            rating,
+            comment,
+        }: {
+            user_id: string;
+            dish_id: string;
+            rating: number;
+            comment: string;
+        }
+    ) : Promise<string>=> {
+        const data = await Review.create({
+            user_id,
+            dish_id,
+            rating,
+            comment,
+            created_at: new Date(),
+            updated_at: new Date(),
+        });
+
+        return data.id;
+    }
+
     public static readonly updateReview = async (
         review_id: string,
         {
