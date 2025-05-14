@@ -53,7 +53,6 @@ export class UserService {
                 updated_at: new Date(),
             });
 
-            // TODO: Send OTP to the user's phone number
             await twilioClient.messages.create({
                 to: `+${country_code}${phone_number}`,
                 from: twilioPhoneNumber,
