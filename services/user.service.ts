@@ -3,6 +3,7 @@ import { sign } from 'hono/jwt';
 import { generateOTP } from '../helpers/otp';
 import { User, type IUser } from '../models/user.model';
 import { config } from '../config/env';
+import { twilioClient, twilioPhoneNumber } from "../libs/sms/twillo";
 
 export class UserService {
     public static readonly requestAccountAccess = async (
@@ -30,7 +31,11 @@ export class UserService {
                 updated_at: new Date(),
             });
 
-            // TODO: Send OTP to the user's phone number
+            await twilioClient.messages.create({
+                to: `+${country_code}${phone_number}`,
+                from: twilioPhoneNumber,
+                body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
+            });
 
             return {
                 message: 'Account created successfully',
@@ -49,6 +54,11 @@ export class UserService {
             });
 
             // TODO: Send OTP to the user's phone number
+            await twilioClient.messages.create({
+                to: `+${country_code}${phone_number}`,
+                from: twilioPhoneNumber,
+                body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
+            });
 
             return {
                 message: 'Account access requested successfully',

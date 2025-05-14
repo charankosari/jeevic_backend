@@ -23,6 +23,9 @@ export const envSchema = z.object({
 	S3_BUCKET: z.string(),
 	S3_URL: z.string(),
 	S3_ENDPOINT: z.string(),
+	TWILIO_ACCOUNT_SID: z.string(),
+	TWILIO_AUTH_TOKEN: z.string(),
+	TWILIO_PHONE_NUMBER: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;
