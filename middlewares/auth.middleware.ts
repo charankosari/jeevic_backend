@@ -40,7 +40,6 @@ export const authMiddleware = (): MiddlewareHandler => {
         );
       }
 
-      console.log(sub, role);
       let currentUser = null;
       if (role === "cafeuser") {
         currentUser = await cafeUserService.getUser(sub);

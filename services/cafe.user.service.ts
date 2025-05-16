@@ -108,13 +108,11 @@ export class cafeUserService {
   };
 
   public static readonly getUser = async (user_id: string) => {
-    console.log(user_id);
     const user = (await CUser.find({
       id: user_id,
     })) as {
       rows: ICUser[];
     };
-    console.log(user);
 
     if (!user) {
       return null;

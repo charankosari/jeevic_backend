@@ -23,6 +23,8 @@ dineInRoute.get('/orders/booking/:booking_id', DineInController.getOrdersByBooki
 dineInRoute.get('/orders/user', DineInController.getOrdersByUserId);
 dineInRoute.get('/orders/table/:table_id', DineInController.getOrdersByTableId);
 dineInRoute.post('/orders', DineInController.createOrder);
+dineInRoute.patch('/orders/:order_id', DineInController.updateOrder);
+
 dineInRoute.post('/orders/cancel/:order_id', DineInController.markOrderAsCancelled);
 
 dineInRoute.get('/checkouts/:checkout_id', DineInController.getCheckoutById);
@@ -46,7 +48,6 @@ dineInRoute.get('/orders', DineInController.getOrders);
 dineInRoute.post('/orders/ready/:order_id', DineInController.markOrderAsReady);
 dineInRoute.post('/orders/serve/:order_id', DineInController.markOrderAsServed);
 dineInRoute.post('/orders/prepare/:order_id', DineInController.markOrderAsPreparing);
-dineInRoute.patch('/orders/:order_id', DineInController.updateOrder);
 dineInRoute.delete('/orders/:order_id', DineInController.deleteOrder);
 
 dineInRoute.get('/bookings', DineInController.getBookings);

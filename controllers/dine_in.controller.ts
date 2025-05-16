@@ -1,7 +1,6 @@
 import { type Context } from 'hono';
 
 import { DineInService } from '../services/dine_in.service';
-
 export class DineInController {
     public static readonly getTables = async (c: Context) => {
         try {
@@ -418,15 +417,14 @@ export class DineInController {
             const {
                 table_id,
                 booking_id,
-                items  // Array of order items
+                items
             } = await c.req.json();
             
-            // Create order with multiple items
             const order = await DineInService.createOrder({
                 user_id,
                 table_id,
                 booking_id,
-                items  // Pass the array of items to the service
+                items
             });
             
             return c.json({
@@ -448,7 +446,30 @@ export class DineInController {
         try {
             const order_id = c.req.param('order_id');
             const data = await c.req.json();
-            const order = await DineInService.updateOrder(order_id, data);
+
+            // Fetch the current order
+            const currentOrder = await DineInService.getOrderById(order_id);
+
+            if (!currentOrder) {
+                return c.json({
+                    success: false,
+                    message: "Order not found",
+                }, 404);
+            }
+
+            // If items are provided, merge them with existing items
+            let mergedItems = currentOrder.items;
+            if (data.items && Array.isArray(data.items)) {
+                mergedItems = [...currentOrder.items, ...data.items];
+            }
+
+            // Prepare the update payload
+            const updatePayload = {
+                ...data,
+                items: mergedItems
+            };
+
+            const order = await DineInService.updateOrder(order_id, updatePayload);
             return c.json({
                 success: true,
                 data: order,
