@@ -319,24 +319,30 @@ export class DineInService {
         {
             user_id,
             table_id,
-            dish_id,
-            quantity,
-            booking_id
+            booking_id,
+            items
         }: {
             user_id: string;
             table_id: string;
-            dish_id: string;
-            quantity: number;
             booking_id: string;
+            items: Array<{
+                dish_id: string;
+                quantity: number;
+                instructions?: string;
+            }>;
         },
     ) : Promise<IDineInOrders>=> {
+        // Validate that items array is not empty
+        if (!items || items.length === 0) {
+            throw new Error('Order must contain at least one item');
+        }
+        
         return await DineInOrders.create({
             user_id,
             table_id,
-            dish_id,
-            quantity,
-            is_served: false,
             booking_id,
+            items,
+            is_served: false,
             order_status: 'pending',
             created_at: new Date(),
             updated_at: new Date(),
@@ -410,6 +416,7 @@ export class DineInService {
     }
 
     // checkout
+    // In createUserEndCheckout method
     public static readonly createUserEndCheckout = async (
         booking_id: string,
     ) : Promise<IDineInCheckout>=> {
@@ -421,7 +428,11 @@ export class DineInService {
         });
         
         const order_ids = orders.rows.map((order) => order.id);
-        const dish_ids = orders.rows.map((order) => order.dish_id);
+        
+        // Collect all dish_ids from all order items
+        const dish_ids = orders.rows.flatMap((order) => 
+            order.items.map(item => item.dish_id)
+        );
 
         // fetch the booking
         const booking = await DineInTableBookings.findById(booking_id);
@@ -439,14 +450,17 @@ export class DineInService {
             },
         });
 
+        // Calculate total amount from all order items
         let total_amount = 0;
         
         for(const order of orders.rows) {
-            const dish = dishs.rows.find((dish) => dish.id === order.dish_id);
-            if (!dish) {
-                continue;
+            for(const item of order.items) {
+                const dish = dishs.rows.find((dish) => dish.id === item.dish_id);
+                if (!dish) {
+                    continue;
+                }
+                total_amount += dish.price * item.quantity;
             }
-            total_amount += dish.price * order.quantity;
         }
 
         // Update booking as is_ready_to_bill true
@@ -592,6 +606,7 @@ export class DineInService {
         };
     }
 
+    // In getTableStats method
     public static readonly getTableStats = async () : Promise<IDineInTableStats[]> => {
         const tables : {
             rows: IDineInTables[];
@@ -646,17 +661,20 @@ export class DineInService {
                 [];
             
             // Calculate items and total amount
-            const items = tableOrders.map(order => {
-                const dish = dishs.rows.find(d => d.id === order.dish_id);
-                return {
-                    name: dish ? dish.name : "Unknown Item",
-                    quantity: order.quantity,
-                    price: dish ? dish.price : 0,
-                    order_id: order.id,
-                    order_status: order.order_status,
-                    dish_id: order.dish_id,
-                    total: (dish ? dish.price : 0) * order.quantity
-                };
+            const items = tableOrders.flatMap(order => {
+                return order.items.map(item => {
+                    const dish = dishs.rows.find(d => d.id === item.dish_id);
+                    return {
+                        name: dish ? dish.name : "Unknown Item",
+                        quantity: item.quantity,
+                        price: dish ? dish.price : 0,
+                        order_id: order.id,
+                        order_status: order.order_status,
+                        dish_id: item.dish_id,
+                        instructions: item.instructions || '',
+                        total: (dish ? dish.price : 0) * item.quantity
+                    };
+                });
             });
             
             const total_amount = items.reduce((sum, item) => sum + item.total, 0);

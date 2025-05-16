@@ -5,7 +5,7 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { poweredBy } from "hono/powered-by";
 
-import { authRoute } from "../routes/auth.route"
+import { authRoute } from "../routes/auth.route";
 import { addressRoute } from "../routes/address.route";
 import { categoryRoute } from "../routes/category.route";
 import { cartRoute } from "../routes/cart.route";
@@ -22,47 +22,50 @@ import { wishlistRoute } from "../routes/wishlist.route";
 import { dishRoute } from "../routes/dish.route";
 import { dineInRoute } from "../routes/dine_in.route";
 import { uploadRoute } from "../routes/upload.route";
+import { cafeAuthRoute } from "../routes/cafe.auth.route";
 
 const app = new Hono();
 
 app.use(logger());
-app.use(cors({
-    origin: '*',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    exposeHeaders: ['Content-Type', 'Content-Length'],
-}));
+app.use(
+  cors({
+    origin: "*",
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    // allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposeHeaders: ["Content-Type", "Content-Length"],
+  })
+);
 app.use(prettyJSON());
 app.use(poweredBy());
 
-app.all('/health', async (c) => {
-    return c.text('OK!')
+app.all("/health", async (c) => {
+  return c.text("OK!");
 });
 
-app.get('/', async (c) => {
-    return c.json({
-        message: 'Hello, Dev!',
-    });
+app.get("/", async (c) => {
+  return c.json({
+    message: "Hello, Dev!",
+  });
 });
 
-app.route('/auth', authRoute);
-app.route('/address', addressRoute);
-app.route('/cart', cartRoute);
-app.route('/category', categoryRoute);
-app.route('/coupon', couponRoute);
-app.route('/giftcard', giftCardRoute);
-app.route('/giftoption', giftoptionRoute);
-app.route('/notification', notificationRoute);
-app.route('/order', orderRoute);
-app.route('/product', productRoute);
-app.route('/review', reviewRoute);
-app.route('/sale', saleRoute);
-app.route('/subcategory', subcategoryRoute);
-app.route('/wishlist', wishlistRoute);
-app.route('/dish', dishRoute);
-app.route('/dine-in', dineInRoute);
-app.route('/upload', uploadRoute);
-
+app.route("/auth", authRoute);
+app.route("/address", addressRoute);
+app.route("/cart", cartRoute);
+app.route("/category", categoryRoute);
+app.route("/coupon", couponRoute);
+app.route("/giftcard", giftCardRoute);
+app.route("/giftoption", giftoptionRoute);
+app.route("/notification", notificationRoute);
+app.route("/order", orderRoute);
+app.route("/product", productRoute);
+app.route("/review", reviewRoute);
+app.route("/sale", saleRoute);
+app.route("/subcategory", subcategoryRoute);
+app.route("/wishlist", wishlistRoute);
+app.route("/dish", dishRoute);
+app.route("/dine-in", dineInRoute);
+app.route("/upload", uploadRoute);
+app.route("/cafe/auth", cafeAuthRoute);
 showRoutes(app);
 
 export { app };

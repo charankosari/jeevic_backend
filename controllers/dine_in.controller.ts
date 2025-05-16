@@ -417,17 +417,18 @@ export class DineInController {
             const user_id = c.get('user_id');
             const {
                 table_id,
-                dish_id,
-                quantity,
                 booking_id,
+                items  // Array of order items
             } = await c.req.json();
+            
+            // Create order with multiple items
             const order = await DineInService.createOrder({
                 user_id,
                 table_id,
-                dish_id,
-                quantity,
                 booking_id,
+                items  // Pass the array of items to the service
             });
+            
             return c.json({
                 success: true,
                 data: order,
