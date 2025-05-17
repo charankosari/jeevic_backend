@@ -614,13 +614,12 @@ export class DineInService {
         const tables : {
             rows: IDineInTables[];
         } = await DineInTables.find({});
-    
         const bookings : {
             rows: IDineInTableBookings[];
         } = await DineInTableBookings.find({
             is_cancelled: false,
+            is_completed: false  // Add this to only get active bookings
         });
-    
         const orders : {
             rows: IDineInOrders[];
         } = await DineInOrders.find({
@@ -636,46 +635,47 @@ export class DineInService {
                 $in: bookings.rows.map((booking) => booking.id),
             },
         });
-    
         const dishs : {
             rows: IDish[];
         } = await Dish.find({});
-    
         const tableStats: IDineInTableStats[] = await Promise.all(tables.rows.map(async (table) => {
             // Find active booking for this table (not cancelled, not completed)
+            console.log(tables,bookings)
             const activeBooking = bookings.rows.find(
-                (booking) => booking.table_id === table.id && !booking.is_cancelled && !booking.is_completed
+                (booking) => booking.table_id === table.table_number && !booking.is_cancelled && !booking.is_completed
             ) as IDineInTableBookings;
-            
             // Find the most recent booking for this table
-            const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.id);
+            const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.table_number);
             const lastBooking = allTableBookings.sort((a, b) => 
                 new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             )[0];
             
             // Find checkout for the last booking
-            const lastCheckout = lastBooking ? 
-                checkouts.rows.find(checkout => checkout.booking_id === lastBooking.id) : 
-                null;
-            
+            const lastCheckout = lastBooking 
+            ? checkouts.rows.find(c => c.booking_id === lastBooking.id) 
+            : null;
             // Find orders for the active booking
-            const tableOrders = activeBooking ? 
-                orders.rows.filter(order => order.booking_id === activeBooking.id) : 
-                [];
-            
+            const tableOrders = activeBooking
+            ? orders.rows.filter(o => o.booking_id === activeBooking.id)
+            : [];
+
             // Calculate items and total amount
             const items = tableOrders.flatMap(order => {
+                // Check if order.items exists and is an array
+                if (!order.items || !Array.isArray(order.items)) {
+                    return [];
+                }
+
                 return order.items.map(item => {
                     const dish = dishs.rows.find(d => d.id === item.dish_id);
                     return {
                         name: dish ? dish.name : "Unknown Item",
-                        quantity: item.quantity,
+                        quantity: item.quantity || 0,
                         price: dish ? dish.price : 0,
                         order_id: order.id,
-                        order_status: order.order_status,
+                        order_status: order.order_status || 'unknown',
                         dish_id: item.dish_id,
-                        instructions: item.instructions || '',
-                        total: (dish ? dish.price : 0) * item.quantity
+                        total: (dish ? dish.price : 0) * (item.quantity || 0)
                     };
                 });
             });

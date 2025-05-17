@@ -413,7 +413,8 @@ export class DineInController {
 
     public static readonly createOrder = async (ctx: Context) => {
         try {
-            const { user_id, table_id, booking_id, items } = await ctx.req.json();
+            const { table_id, booking_id, items } = await ctx.req.json();
+            const user_id = ctx.get('user_id');
             
             // Log the table_id being processed
             console.log('Creating order for table ID:', table_id);
