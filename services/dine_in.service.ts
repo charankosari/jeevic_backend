@@ -69,8 +69,8 @@ export class DineInService {
     public static readonly deleteTable = async (
         table_id: string,
     ) : Promise<void>=> {
-        await DineInTables.deleteMany({
-            id: table_id,
+        await DineInTables.findOneAndRemove({
+            id: table_id
         });
     }
 
