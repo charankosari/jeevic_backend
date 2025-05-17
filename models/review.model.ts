@@ -7,7 +7,7 @@ interface IReview {
     product_id: string;
     dish_id: string;
     rating: number;
-    comment: string;
+    comment?: string;
     meta_data: string;
     created_at: Date;
     updated_at: Date;

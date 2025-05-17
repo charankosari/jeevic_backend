@@ -418,80 +418,90 @@ export class DineInService {
     }
 
     // checkout
-    // In createUserEndCheckout method
     public static readonly createUserEndCheckout = async (
         booking_id: string,
     ) : Promise<IDineInCheckout>=> {
-        // fetch all the orders for the booking
-        const orders: {
-            rows: IDineInOrders[];
-        } = await DineInOrders.find({
-            booking_id,
-        });
-        
-        const order_ids = orders.rows.map((order) => order.id);
-        
-        // Collect all dish_ids from all order items
-        const dish_ids = orders.rows.flatMap((order) => 
-            order.items.map(item => item.dish_id)
-        );
+        try {
+            // fetch all the orders for the booking
+            const orders: {
+                rows: IDineInOrders[];
+            } = await DineInOrders.find({
+                booking_id,
+            });
+            console.log('Orders:', orders);
 
-        // fetch the booking
-        const booking = await DineInTableBookings.findById(booking_id);
-        if (!booking) {
-            throw new Error('Booking not found');
-        }
+            const order_ids = orders.rows.map((order) => order.id);
 
-        const table = await DineInTables.findById(booking.table_id);
+            // Collect all dish_ids from all order items
+            const dish_ids = orders.rows.flatMap((order) => 
+                order.items.map(item => item.dish_id)
+            );
+            console.log('Dish IDs:', dish_ids);
 
-        const dishs : {
-            rows: IDish[];
-        } = await Dish.find({
-            id: {
-                $in: dish_ids,
-            },
-        });
-
-        // Calculate total amount from all order items
-        let total_amount = 0;
-        
-        for(const order of orders.rows) {
-            for(const item of order.items) {
-                const dish = dishs.rows.find((dish) => dish.id === item.dish_id);
-                if (!dish) {
-                    continue;
-                }
-                total_amount += dish.price * item.quantity;
+            // fetch the booking
+            const booking = await DineInTableBookings.findById(booking_id);
+            if (!booking) {
+                throw new Error('Booking not found');
             }
+            console.log('Booking:', booking);
+
+            const table = await DineInTables.findById(booking.table_id);
+            console.log('Table:', table);
+
+            const dishs : {
+                rows: IDish[];
+            } = await Dish.find({
+                id: {
+                    $in: dish_ids,
+                },
+            });
+            console.log('Dishes:', dishs);
+
+            // Calculate total amount from all order items
+            let total_amount = 0;
+            
+            for(const order of orders.rows) {
+                for(const item of order.items) {
+                    const dish = dishs.rows.find((dish) => dish.id === item.dish_id);
+                    if (!dish) {
+                        continue;
+                    }
+                    total_amount += dish.price * item.quantity;
+                }
+            }
+            console.log('Total Amount:', total_amount);
+
+            // Update booking as is_ready_to_bill true
+            await DineInTableBookings.updateById(booking_id, {
+                is_ready_to_bill: true,
+                updated_at: new Date(),
+            });
+
+            // mark table for cleaning
+            await DineInTables.updateById(booking.table_id, {
+                meta_data: {
+                    ...table.meta_data,
+                    to_be_cleaned: true,
+                },
+                updated_at: new Date(),
+            });
+        
+            // create a new checkout
+            return await DineInCheckout.create({
+                user_id: booking.user_id,
+                booking_id,
+                table_id: booking.table_id,
+                order_ids,
+                total_price: total_amount,
+                payment_status: 'pending',
+                is_checked_out: false,
+                created_at: new Date(),
+                updated_at: new Date(),
+            });
+        } catch (error) {
+            console.error('Error in createUserEndCheckout:', error);
+            throw error;
         }
-
-        // Update booking as is_ready_to_bill true
-        await DineInTableBookings.updateById(booking_id, {
-            is_ready_to_bill: true,
-            updated_at: new Date(),
-        });
-
-        // mark table for cleaning
-        await DineInTables.updateById(booking.table_id, {
-            meta_data: {
-                ...table.meta_data,
-                to_be_cleaned: true,
-            },
-            updated_at: new Date(),
-        });
-     
-        // create a new checkout
-        return await DineInCheckout.create({
-            user_id: booking.user_id,
-            booking_id,
-            table_id: booking.table_id,
-            order_ids,
-            total_price: total_amount,
-            payment_status: 'pending',
-            is_checked_out: false,
-            created_at: new Date(),
-            updated_at: new Date(),
-        });
     }
 
     public static readonly getCheckoutById = async (
