@@ -411,34 +411,17 @@ export class DineInController {
         }
     };
 
-    public static readonly createOrder = async (c: Context) => {
+    public static readonly createOrder = async (ctx: Context) => {
         try {
-            const user_id = c.get('user_id');
-            const {
-                table_id,
-                booking_id,
-                items
-            } = await c.req.json();
+            const { user_id, table_id, booking_id, items } = await ctx.req.json();
             
-            const order = await DineInService.createOrder({
-                user_id,
-                table_id,
-                booking_id,
-                items
-            });
-            
-            return c.json({
-                success: true,
-                data: order,
-            });
-        }
-        catch (err) {
-            if(err instanceof Error){
-                return c.json({
-                    success: false,
-                    message: err.message,
-                }, 500);
-            }
+            // Log the table_id being processed
+            console.log('Creating order for table ID:', table_id);
+
+            const order = await DineInService.createOrder({ user_id, table_id, booking_id, items });
+            return ctx.json({ success: true, data: order });
+        } catch (error) {
+            return ctx.json({ success: false, message: error instanceof Error ? error.message : 'An error occurred' }, 500);
         }
     };
 

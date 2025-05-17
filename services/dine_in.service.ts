@@ -422,32 +422,31 @@ export class DineInService {
         booking_id: string,
     ) : Promise<IDineInCheckout>=> {
         try {
-            // fetch all the orders for the booking
+            const booking = await DineInTableBookings.findById(booking_id);
+            if (!booking) {
+                throw new Error('Booking not found');
+            }
+            const table_number = booking.table_id;
+            if (!table_number) {
+                throw new Error('Table number is undefined');
+            }
+            const table = await DineInTables.find({
+                table_number: table_number,
+            }).then((result) => result.rows[0] ?? null);
+
+            if (!table) {
+                throw new Error(`Table with number ${table_number} not found`);
+            }
+            const real_table_id = table.id; 
             const orders: {
                 rows: IDineInOrders[];
             } = await DineInOrders.find({
                 booking_id,
             });
-            console.log('Orders:', orders);
-
             const order_ids = orders.rows.map((order) => order.id);
-
-            // Collect all dish_ids from all order items
             const dish_ids = orders.rows.flatMap((order) => 
                 order.items.map(item => item.dish_id)
             );
-            console.log('Dish IDs:', dish_ids);
-
-            // fetch the booking
-            const booking = await DineInTableBookings.findById(booking_id);
-            if (!booking) {
-                throw new Error('Booking not found');
-            }
-            console.log('Booking:', booking);
-
-            const table = await DineInTables.findById(booking.table_id);
-            console.log('Table:', table);
-
             const dishs : {
                 rows: IDish[];
             } = await Dish.find({
@@ -455,9 +454,6 @@ export class DineInService {
                     $in: dish_ids,
                 },
             });
-            console.log('Dishes:', dishs);
-
-            // Calculate total amount from all order items
             let total_amount = 0;
             
             for(const order of orders.rows) {
@@ -469,16 +465,11 @@ export class DineInService {
                     total_amount += dish.price * item.quantity;
                 }
             }
-            console.log('Total Amount:', total_amount);
-
-            // Update booking as is_ready_to_bill true
             await DineInTableBookings.updateById(booking_id, {
                 is_ready_to_bill: true,
                 updated_at: new Date(),
             });
-
-            // mark table for cleaning
-            await DineInTables.updateById(booking.table_id, {
+            await DineInTables.updateById(real_table_id, {
                 meta_data: {
                     ...table.meta_data,
                     to_be_cleaned: true,
@@ -490,7 +481,7 @@ export class DineInService {
             return await DineInCheckout.create({
                 user_id: booking.user_id,
                 booking_id,
-                table_id: booking.table_id,
+                table_id: real_table_id, // Use the real table_id here
                 order_ids,
                 total_price: total_amount,
                 payment_status: 'pending',
