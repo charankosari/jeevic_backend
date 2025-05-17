@@ -66,4 +66,24 @@ export class cafeAuthController {
       }
     }
   };
+  public static readonly getUsers = async (ctx: Context) => {
+    try {
+      const { users, usersCount } = await cafeUserService.getUsers();
+
+      return ctx.json({
+        success: true,
+        data: {
+          users,
+          total: usersCount
+        }
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({
+          success: false,
+          message: error.message,
+        }, 400);
+      }
+    }
+  };
 }

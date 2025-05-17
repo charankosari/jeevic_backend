@@ -122,4 +122,19 @@ export class cafeUserService {
 
     return userData;
   };
+  public static readonly getUsers = async () => {
+    const users = await CUser.find({});
+    const usersCount = users.rows ? users.rows.length : 0;
+    
+    // Remove phone_otp from each user
+    const sanitizedUsers = users.rows.map(({ phone_otp, ...rest }: ICUser) => rest);
+    
+    return {
+        users: {
+            rows: sanitizedUsers,
+            meta: users.meta
+        },
+        usersCount
+    };
+  }
 }
