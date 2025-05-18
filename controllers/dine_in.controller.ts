@@ -445,6 +445,7 @@ export class DineInController {
             let mergedItems = currentOrder.items;
             if (data.items && Array.isArray(data.items)) {
                 mergedItems = [...currentOrder.items, ...data.items];
+                data.order_status = 'pending';
             }
 
             // Prepare the update payload

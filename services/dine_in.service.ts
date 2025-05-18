@@ -590,6 +590,24 @@ export class DineInService {
                     totalProfit: adminDoc.totalProfit,
                     updated_at: new Date()
                 });
+                if (checkout.table_id) {
+                    const table = await DineInTables.findById(checkout.table_id);
+                    if (table) {
+                        await DineInTables.updateById(checkout.table_id, {
+                            meta_data: {
+                                ...table.meta_data,
+                                to_be_cleaned: true
+                            },
+                            updated_at: new Date()
+                        });
+                    }
+                }
+                if (checkout.booking_id) {
+                    await DineInTableBookings.updateById(checkout.booking_id, {
+                        is_completed: true,
+                        updated_at: new Date()
+                    });
+                }
             }
         }
         return await DineInCheckout.updateById(checkout_id, data);
@@ -683,6 +701,9 @@ export class DineInService {
         const tables : {
             rows: IDineInTables[];
         } = await DineInTables.find({});
+        const activeTables = await DineInTables.find({
+            "meta_data.status": "Active"
+          });
         const bookings : {
             rows: IDineInTableBookings[];
         } = await DineInTableBookings.find({
@@ -709,9 +730,8 @@ export class DineInService {
         } = await Dish.find({});
         const tableStats: IDineInTableStats[] = await Promise.all(tables.rows.map(async (table) => {
             // Find active booking for this table (not cancelled, not completed)
-            console.log(tables,bookings)
             const activeBooking = bookings.rows.find(
-                (booking) => booking.table_id === table.table_number && !booking.is_cancelled && !booking.is_completed
+                (booking) => booking.table_id === activeTables.table_number 
             ) as IDineInTableBookings;
             // Find the most recent booking for this table
             const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.table_number);
@@ -753,14 +773,11 @@ export class DineInService {
             
             // Determine table status based on the specified conditions
             let status = "Untouched";
-
             // Check if table is currently booked
             if (activeBooking) {
-                if (activeBooking.is_ready_to_bill) {
-                    status = "Ready to Bill";
-                } else {
-                    status = "Active";
-                }
+                if (activeBooking) {
+                    status = activeBooking.is_ready_to_bill ? "Ready to Bill" : "Active";
+                  }
                 
                 return {
                     table_number: table.table_number,
