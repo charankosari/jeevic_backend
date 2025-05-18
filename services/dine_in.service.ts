@@ -6,7 +6,10 @@ import { Dish, type IDish } from '../models/dish.model';
 import { Admin, type IAdmin } from '../models/admin.model';
 import { UserService } from './user.service';
 import type { IUser } from '../models/user.model';
-
+interface TableMetaData {
+    to_be_cleaned: boolean;
+    status: string;
+}
 export class DineInService {
     // tables
     public static readonly getTables = async () : Promise<IDineInTables[]>=> {
@@ -742,6 +745,7 @@ export class DineInService {
 
         const tableStats: IDineInTableStats[] = await Promise.all(tables.rows.map(async (table) => {
           
+            const metaData = table.meta_data as TableMetaData;
          
             const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.table_number);
             const lastBooking = allTableBookings.sort((a, b) => 
@@ -785,7 +789,8 @@ export class DineInService {
             });
 
             const total_amount = items.reduce((sum, item) => sum + item.total, 0);
-            let status = "Untouched";
+            let status = metaData.to_be_cleaned ? "To be cleaned" : metaData.status;
+
 
             if (activeBooking) {
                 status = activeBooking.is_ready_to_bill ? "Ready to Bill" : "Active";
