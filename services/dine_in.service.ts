@@ -741,9 +741,7 @@ export class DineInService {
         } = await Dish.find({});
 
         const tableStats: IDineInTableStats[] = await Promise.all(tables.rows.map(async (table) => {
-            const activeBooking = bookings.rows.find(
-                (booking) => booking.table_id === table.table_number
-            );
+          
          
             const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.table_number);
             const lastBooking = allTableBookings.sort((a, b) => 
@@ -754,14 +752,23 @@ export class DineInService {
                 ? checkouts.rows.find(c => c.booking_id === lastBooking.id)
                 : null;
 
-            const tableOrders = activeBooking
-                ? orders.rows.filter(o => o.booking_id === activeBooking.id)
-                : [];
+                const activeBooking = bookings.rows.find(
+                    (booking) => booking.table_id === table.table_number
+                );
+            
+              // ... existing code ...
+            const activeTable = activeTables.rows.find(
+            (activeTable: IDineInTables) => activeTable.table_number === table.table_number
+            );
 
-            const items = tableOrders.flatMap(order => {
-                if (!order.items || !Array.isArray(order.items)) {
-                    return [];
-                }
+            
+        const tableOrders = orders.rows.filter(order => order.table_id === activeTable?.table_number);
+
+            
+        const items = tableOrders.flatMap(order => {
+            if (!order.items || !Array.isArray(order.items)) {
+                return [];
+            }
 
                 return order.items.map(item => {
                     const dish = dishs.rows.find(d => d.id === item.dish_id);
