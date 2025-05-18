@@ -22,119 +22,111 @@ export class AdminController {
     }
     
     public static readonly getAdminStats = async (c: Context) => {
-      try {
-          const { range = '7' } = c.req.query();
-          const daysRange = parseInt(range);
-
-          const stats = await adminService.getAdminStats(daysRange);
+        try {
+          // Ensure admin doc exists
+      
+          // Fetch raw stats for each window
+          const stats7  = await adminService.getAdminStats(7);
+          const stats30 = await adminService.getAdminStats(30);
+          const stats90 = await adminService.getAdminStats(90);
+      
           const currentDate = new Date();
-
-          // Fetch categories and dishes
           const dishCategories = await DishCategory.find({});
-          const dishes = await Dish.find({});
-          const calculateProfitPercentage = () => {
-            const today = currentDate.getDate();
-            const month = currentDate.getMonth() + 1;
-            const year = currentDate.getFullYear();
-            const todayKey = `${today}-${month}-${year}`;
-            const dates = Object.keys(stats.dailyProfits).sort((a, b) => {
-                const [dayA, monthA, yearA] = a.split('-').map(Number);
-                const [dayB, monthB, yearB] = b.split('-').map(Number);
-                return new Date(yearB, monthB - 1, dayB).getTime() - 
-                       new Date(yearA, monthA - 1, dayA).getTime();
+          const dishes         = await Dish.find({});
+      
+          // Helper to filter an object by date-key range
+          function filterRange<T>(data: Record<string, T>, days: number) {
+            const start = new Date();
+            start.setDate(currentDate.getDate() - days);
+            const filteredData = Object.entries(data)
+              .filter(([dateStr]) => {
+                const [d, m, y] = dateStr.split('-').map(Number);
+                const dt = new Date(y, m - 1, d);
+                return dt >= start && dt <= currentDate;
+              })
+              .reduce((acc, [k, v]) => {
+                acc[k] = v;
+                return acc;
+              }, {} as Record<string, T>);
+            
+            // Ensure the number of records does not exceed the specified days
+            const sortedKeys = Object.keys(filteredData).sort((a, b) => {
+              const [d1, m1, y1] = a.split('-').map(Number);
+              const [d2, m2, y2] = b.split('-').map(Number);
+              return new Date(y2, m2 - 1, d2).getTime() - new Date(y1, m1 - 1, d1).getTime();
             });
-            const [lastDate, secondLastDate] = dates;
-            if (lastDate === todayKey && secondLastDate) {
-                const currentProfit = stats.dailyProfits[lastDate];
-                const previousProfit = stats.dailyProfits[secondLastDate];
-                
-                if (previousProfit === 0) return '0';
-                
-                const percentage = ((currentProfit - previousProfit) / previousProfit) * 100;
-                return percentage.toFixed(2);
-            } else {
-                // If last date is not today, compare with 0
-                const previousProfit = stats.dailyProfits[lastDate] || 0;
-                if (previousProfit === 0) return '0';
-                
-                const percentage = ((0 - previousProfit) / previousProfit) * 100;
-                return percentage.toFixed(2);
-            }
-          
-        };
+            
+            return sortedKeys.slice(0, days).reduce((acc, key) => {
+              acc[key] = filteredData[key];
+              return acc;
+            }, {} as Record<string, T>);
+          }
+      
+          // Profit change % (unchanged)
+          const profitPercentage = (() => {
+            const todayKey = (() => {
+              const d = currentDate.getDate();
+              const m = currentDate.getMonth() + 1;
+              const y = currentDate.getFullYear();
+              return `${d}-${m}-${y}`;
+            })();
+            const daysKeys = Object.keys(stats7.dailyProfits).sort((a, b) => {
+              const [d1, m1, y1] = a.split('-').map(Number);
+              const [d2, m2, y2] = b.split('-').map(Number);
+              return new Date(y2, m2 - 1, d2).getTime() - new Date(y1, m1 - 1, d1).getTime();
+            });
+            const [latest, prev] = daysKeys;
+            const curr = stats7.dailyProfits[latest] ?? 0;
+            const prevVal = stats7.dailyProfits[prev] ?? 0;
+            if (prevVal === 0) return '0';
+            return (((curr - prevVal) / prevVal) * 100).toFixed(2);
+          })();
+      
           // Transform salesOfProducts into array
-          const transformedSalesOfProducts = Object.entries(stats.salesOfProducts).map(([categoryId, count]) => {
-              const category = dishCategories.rows.find((cat: IDishCategory) => cat.id === categoryId);
-              return {
-                  id: categoryId,
-                  name: category?.name || 'Unknown Category',
-                  count
-              };
+          const salesOfProducts = Object.entries(stats7.salesOfProducts).map(([catId, cnt]) => {
+            const cat = dishCategories.rows.find((c: IDishCategory) => c.id === catId);
+            return { id: catId, name: cat?.name ?? 'Unknown', count: cnt };
           });
-
+      
           // Transform salesOfAllProducts into array
-          const transformedSalesOfAllProducts = Object.entries(stats.salesOfAllProducts).map(([categoryId, dishData]) => {
-              const category = dishCategories.rows.find((cat: IDishCategory) => cat.id === categoryId);
-              return {
-                  category: {
-                      id: categoryId,
-                      name: category?.name || 'Unknown Category'
-                  },
-                  dishes: Object.entries(dishData).map(([dishId, count]) => {
-                      const dish = dishes.rows.find((d: IDish) => d.id === dishId);
-                      return {
-                          id: dishId,
-                          name: dish?.name || 'Unknown Dish',
-                          count
-                      };
-                  })
-              };
+          const salesOfAllProducts = Object.entries(stats7.salesOfAllProducts).map(([catId, dishMap]) => {
+            const cat = dishCategories.rows.find((c: IDishCategory) => c.id === catId);
+            return {
+              category: { id: catId, name: cat?.name ?? 'Unknown' },
+              dishes: Object.entries(dishMap).map(([dishId, cnt]) => {
+                const d = dishes.rows.find((x: IDish) => x.id === dishId);
+                return { id: dishId, name: d?.name ?? 'Unknown', count: cnt };
+              })
+            };
           });
-
-          // Helper function to filter dates within range
-          const filterDateRange = (data: Record<string, any>, days: number) => {
-              const startDate = new Date();
-              startDate.setDate(currentDate.getDate() - days);
-              
-              return Object.entries(data)
-                  .filter(([date]) => {
-                      const [day, month, year] = date.split('-').map(Number);
-                      const dateObj = new Date(year, month - 1, day);
-                      return dateObj >= startDate && dateObj <= currentDate;
-                  })
-                  .reduce((acc, [date, value]) => {
-                      acc[date] = value;
-                      return acc;
-                  }, {} as Record<string, any>);
-          };
-
+          // Build the response
           return c.json({
-              success: true,
-              data: {
-                  date: currentDate.toLocaleDateString('en-GB').split('/').join('-'),
-                  dailyProfits: stats.dailyProfits,
-                  totalProfit: stats.totalProfit,
-                  profitPercentage: calculateProfitPercentage(),
-                  salesOfProducts: transformedSalesOfProducts,
-                  salesOfAllProducts: transformedSalesOfAllProducts,
-                  peakHours: {
-                      sevenDays: filterDateRange(stats.peakHours, 7),
-                      thirtyDays: filterDateRange(stats.peakHours, 30),
-                      ninetyDays: filterDateRange(stats.peakHours, 90)
-                  },
-                  revenueHistory: {
-                      sevenDays: filterDateRange(stats.revenueHistory, 7),
-                      thirtyDays: filterDateRange(stats.revenueHistory, 30),
-                      ninetyDays: filterDateRange(stats.revenueHistory, 90)
-                  }
-              }
+            success: true,
+            data: {
+              date: currentDate.toLocaleDateString('en-GB').split('/').join('-'),
+              dailyProfits: stats7.dailyProfits,
+              totalProfit: stats7.totalProfit,
+              profitPercentage,
+              salesOfProducts,
+              salesOfAllProducts,
+      
+              // **Structured windows:**
+              peakHours: {
+                sevenDays:  filterRange(stats7.peakHours,  7),
+                thirtyDays: filterRange(stats30.peakHours, 30),
+                ninetyDays: filterRange(stats90.peakHours, 90),
+              },
+            // AFTER — take the service’s already-filtered windows directly
+revenueHistory: 
+    stats7.revenueHistory}
           });
-      } catch (error) {
+        } catch (err) {
           return c.json({
-              success: false,
-              message: error instanceof Error ? error.message : "Failed to fetch admin statistics"
+            success: false,
+            message: err instanceof Error ? err.message : 'Failed to fetch admin statistics'
           }, 500);
-      }
-  }
+        }
+      };
+      
 
 }

@@ -27,12 +27,9 @@ export class adminService {
         }
       };
       
-    public static readonly getAdminStats = async (daysRange: number) => {
+    public static readonly getAdminStats = async (recordsCount: number) => {
         try {
             await adminService.initializeAdminDocument();
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setDate(endDate.getDate() - daysRange);
           
             const adminStats = await Admin.findOne({});
             if (!adminStats) {
@@ -40,42 +37,39 @@ export class adminService {
                     dailyProfits: {},
                     totalProfit: 0,
                     salesOfProducts: {},
-                    salesOfAllProducts: {}, // Empty object for categories and their items
+                    salesOfAllProducts: {},
                     peakHours: {},
                     revenueHistory: {}
                 };
             }
 
-            // Filter data for the requested date range
-            const filteredDailyProfits = Object.entries(adminStats.dailyProfits)
-                .filter(([date]) => {
-                    const [day, month, year] = date.split('-').map(Number);
-                    const dateObj = new Date(year, month - 1, day);
-                    return dateObj >= startDate && dateObj <= endDate;
-                })
-                .reduce((acc, [date, amount]) => {
-                    acc[date] = amount;
+            // Helper function to get the last 'recordsCount' records
+            const getLastRecords = <T>(data: Record<string, T>) => {
+                const sortedKeys = Object.keys(data || {}).sort((a, b) => {
+                    const [d1, m1, y1] = a.split('-').map(Number);
+                    const [d2, m2, y2] = b.split('-').map(Number);
+                    return new Date(y2, m2 - 1, d2).getTime() - new Date(y1, m1 - 1, d1).getTime();
+                });
+                return sortedKeys.slice(0, recordsCount).reduce((acc, key) => {
+                    acc[key] = data[key];
                     return acc;
-                }, {} as Record<string, number>);
+                }, {} as Record<string, T>);
+            };
 
-            const filteredPeakHours = Object.entries(adminStats.peakHours)
-                .filter(([date]) => {
-                    const [day, month, year] = date.split('-').map(Number);
-                    const dateObj = new Date(year, month - 1, day);
-                    return dateObj >= startDate && dateObj <= endDate;
-                })
-                .reduce((acc, [date, hours]) => {
-                    acc[date] = hours;
-                    return acc;
-                }, {} as Record<string, string[]>);
+            const filteredDailyProfits = getLastRecords(adminStats.dailyProfits);
+            const filteredPeakHours = getLastRecords(adminStats.peakHours);
+            const filteredDailyRevenue = getLastRecords(adminStats.revenueHistory);
 
+            // Build the response with clear separation of records
             return {
                 dailyProfits: filteredDailyProfits,
-                totalProfit: adminStats.totalProfit,
-                salesOfProducts: adminStats.salesOfProducts,
-                salesOfAllProducts: adminStats.salesOfAllProducts, // Added this line
+                totalProfit: Object.values(filteredDailyProfits).reduce((sum, profit) => sum + profit, 0),
+                salesOfProducts: { ...adminStats.salesOfProducts },
+                salesOfAllProducts: { ...adminStats.salesOfAllProducts },
                 peakHours: filteredPeakHours,
-                revenueHistory: filteredDailyProfits
+                revenueHistory: 
+                    getLastRecords(adminStats.revenueHistory),
+                
             };
 
         } catch (error) {
