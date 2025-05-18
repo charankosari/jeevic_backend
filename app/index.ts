@@ -70,6 +70,7 @@ app.route("/upload", uploadRoute);
 app.route("/cafe/auth", cafeAuthRoute);
 app.route("/banner", bannerRoute); 
 // admin routes
+
 app.route("/admin", adminRoute); 
 showRoutes(app);
 

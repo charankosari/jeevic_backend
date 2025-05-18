@@ -11,7 +11,11 @@ interface IAdmin {
             [itemName: string]: number;
         };
     };
-    peakHours: Record<string, string[]>;
+    peakHours: {
+        [date: string]: {
+            [hour: string]: number
+        }
+    };
     revenueHistory: Record<string, number>;
     created_at: Date;
     updated_at: Date;

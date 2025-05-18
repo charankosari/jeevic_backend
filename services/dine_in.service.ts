@@ -3,6 +3,7 @@ import { DineInTables, type IDineInTables } from '../models/dine_in_table.model'
 import { DineInOrders, type IDineInOrders } from '../models/dine_in_order.model';
 import { DineInTableBookings, type IDineInTableBookings } from '../models/dine_in_table_booking.model';
 import { Dish, type IDish } from '../models/dish.model';
+import { Admin, type IAdmin } from '../models/admin.model';
 import { UserService } from './user.service';
 import type { IUser } from '../models/user.model';
 
@@ -146,12 +147,37 @@ export class DineInService {
                 is_cancelled: false,
                 is_confirmed: false,
             });
-    
+            
             if (preBooking.rows.length > 0) {
                 throw new Error("Table is already booked");
             }
         }
+        const adminDoc = await Admin.findOne({});
+        if (!adminDoc) {
+            throw new Error('Admin document not found');
+        }
+        const bookingDate = new Date(booking_time);
+        const dateKey = `${bookingDate.getDate()}-${bookingDate.getMonth() + 1}-${bookingDate.getFullYear()}`;
+        const hour = bookingDate.getHours();
+        if (!adminDoc.peakHours) {
+            adminDoc.peakHours = {};
+        }
+        if (!adminDoc.peakHours[dateKey]) {
+            adminDoc.peakHours[dateKey] = {};
+        }
+        const updatedPeakHours = {
+            ...adminDoc.peakHours,
+            [dateKey]: {
+                ...adminDoc.peakHours[dateKey],
+                [hour]: (adminDoc.peakHours[dateKey]?.[hour] || 0) + 1
+            }
+        };
+        await Admin.updateById(adminDoc.id, {
+            peakHours: updatedPeakHours,
+            updated_at: new Date()
+        });
 
+        // Increment the count for this hour
         return await DineInTableBookings.create({
             table_id,
             user_id,
@@ -338,7 +364,31 @@ export class DineInService {
         if (!items || items.length === 0) {
             throw new Error('Order must contain at least one item');
         }
-        
+        const dishes = await Dish.find({
+            id: {
+                $in: items.map(item => item.dish_id)
+            }
+        });
+        let adminDoc = await Admin.findOne({});
+        if (!adminDoc) {
+            throw new Error('Admin document not found');
+        }
+        for (const item of items) {
+            const dish = dishes.rows.find((d: IDish) => d.id === item.dish_id);
+            if (!dish) continue;
+            const currentCategoryCount = adminDoc.salesOfProducts[dish.dish_category_id] || 0;
+            adminDoc.salesOfProducts[dish.dish_category_id] = currentCategoryCount + item.quantity;
+            if (!adminDoc.salesOfAllProducts[dish.dish_category_id]) {
+                adminDoc.salesOfAllProducts[dish.dish_category_id] = {};
+            }
+            const currentItemCount = adminDoc.salesOfAllProducts[dish.dish_category_id][dish.id] || 0;
+            adminDoc.salesOfAllProducts[dish.dish_category_id][dish.id] = currentItemCount + item.quantity;
+        }
+        await Admin.updateById(adminDoc.id, {
+            salesOfProducts: adminDoc.salesOfProducts,
+            salesOfAllProducts: adminDoc.salesOfAllProducts,
+            updated_at: new Date()
+        });
         return await DineInOrders.create({
             user_id,
             table_id,
@@ -523,6 +573,25 @@ export class DineInService {
         checkout_id: string,
         data: Partial<IDineInCheckout>,
     ) : Promise<IDineInCheckout | null>=> {
+        if (data.is_checked_out) {
+            const checkout = await DineInCheckout.findById(checkout_id);
+            if (checkout) {
+                const adminDoc = await Admin.findOne({});
+                if (!adminDoc) {
+                    throw new Error('Admin document not found');
+                }
+                const today = new Date();
+                const dateKey = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+                const currentDailyProfit = adminDoc.dailyProfits[dateKey] || 0;
+                adminDoc.dailyProfits[dateKey] = currentDailyProfit + checkout.total_price;
+                adminDoc.totalProfit = (adminDoc.totalProfit || 0) + checkout.total_price;
+                await Admin.updateById(adminDoc.id, {
+                    dailyProfits: adminDoc.dailyProfits,
+                    totalProfit: adminDoc.totalProfit,
+                    updated_at: new Date()
+                });
+            }
+        }
         return await DineInCheckout.updateById(checkout_id, data);
     }
 

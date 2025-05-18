@@ -583,6 +583,7 @@ export class DineInController {
             const {
                 booking_id
             } = await c.req.json();
+            
             const order = await DineInService.createUserEndCheckout(booking_id);
             return c.json({
                 success: true,
