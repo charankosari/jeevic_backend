@@ -418,7 +418,8 @@ export class DineInController {
             
             // Log the table_id being processed
 
-            const order = await DineInService.createOrder({ user_id, table_id, booking_id, items });
+            const order = await DineInService.createOrder({ user_id, table_id, booking_id, items , order_status:"pending",
+                is_served:false});
             return ctx.json({ success: true, data: order });
         } catch (error) {
             return ctx.json({ success: false, message: error instanceof Error ? error.message : 'An error occurred' }, 500);

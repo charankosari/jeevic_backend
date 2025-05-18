@@ -351,11 +351,15 @@ export class DineInService {
             user_id,
             table_id,
             booking_id,
-            items
+            items,
+            order_status,
+            is_served
         }: {
             user_id: string;
             table_id: string;
             booking_id: string;
+            is_served: false,
+            order_status: 'pending',
             items: Array<{
                 dish_id: string;
                 quantity: number;
@@ -543,7 +547,7 @@ export class DineInService {
             return await DineInCheckout.create({
                 user_id: booking.user_id,
                 booking_id,
-                table_id: real_table_id, // Use the real table_id here
+                table_id: table_number, // Use the real table_id here
                 order_ids,
                 total_price: total_amount,
                 payment_status: 'pending',
@@ -608,6 +612,7 @@ export class DineInService {
                         await DineInTables.updateById(checkout.table_id, {
                             meta_data: {
                                 ...table.meta_data,
+                                status: "Untouched",
                                 to_be_cleaned: true
                             },
                             updated_at: new Date()
@@ -615,10 +620,13 @@ export class DineInService {
                     }
                 }
                 if (checkout.booking_id) {
-                    await DineInTableBookings.updateById(checkout.booking_id, {
-                        is_completed: true,
-                        updated_at: new Date()
-                    });
+                    const booking = await DineInTableBookings.findById(checkout.booking_id);
+                    if (booking) {
+                        await DineInTableBookings.updateById(checkout.booking_id, {
+                            is_completed: true,
+                            updated_at: new Date()
+                        });
+                    }
                 }
             }
         }
@@ -709,123 +717,128 @@ export class DineInService {
     }
 
     // In getTableStats method
-    public static readonly getTableStats = async (): Promise<IDineInTableStats[]> => {
-        const tables: {
+public static readonly getTableStats = async () : Promise<IDineInTableStats[]> => {
+        const tables : {
             rows: IDineInTables[];
         } = await DineInTables.find({});
-        const activeTables = await DineInTables.find({
-            "meta_data.status": "Active"
-          });
+    
         const bookings : {
             rows: IDineInTableBookings[];
         } = await DineInTableBookings.find({
             is_cancelled: false,
-            is_completed: false
         });
-
-        const orders: {
+    
+        const orders : {
             rows: IDineInOrders[];
         } = await DineInOrders.find({
             booking_id: {
                 $in: bookings.rows.map((booking) => booking.id),
             },
         });
-
-        const checkouts: {
+    
+        const checkouts : {
             rows: IDineInCheckout[];
         } = await DineInCheckout.find({
             booking_id: {
                 $in: bookings.rows.map((booking) => booking.id),
             },
         });
-
-        const dishs: {
+    
+        const dishs : {
             rows: IDish[];
         } = await Dish.find({});
-
+    
         const tableStats: IDineInTableStats[] = await Promise.all(tables.rows.map(async (table) => {
-          
-            const metaData = table.meta_data as TableMetaData;
-         
-            const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.table_number);
+            // Find active booking for this table (not cancelled, not completed)
+            const activeBooking = bookings.rows.find(
+                (booking) => booking.table_id === table.table_number && !booking.is_cancelled && !booking.is_completed
+            ) as IDineInTableBookings;
+            
+            
+            // Find the most recent booking for this table
+            const allTableBookings = bookings.rows.filter(booking => booking.table_id === table.id);
             const lastBooking = allTableBookings.sort((a, b) => 
                 new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             )[0];
-
-            const lastCheckout = lastBooking
-                ? checkouts.rows.find(c => c.booking_id === lastBooking.id)
-                : null;
-
-                const activeBooking = bookings.rows.find(
-                    (booking) => booking.table_id === table.table_number
-                );
             
-              // ... existing code ...
-            const activeTable = activeTables.rows.find(
-            (activeTable: IDineInTables) => activeTable.table_number === table.table_number
-            );
-
+            // Find checkout for the last booking
+            const lastCheckout = lastBooking ? 
+                checkouts.rows.find(checkout => checkout.booking_id === lastBooking.id) : 
+                null;
             
-        const tableOrders = orders.rows.filter(order => order.table_id === activeTable?.table_number);
-
+            // Find orders for the active booking
+            const tableOrders = activeBooking ? 
+                orders.rows.filter(order => order.booking_id === activeBooking.id) : 
+                [];
             
-        const items = tableOrders.flatMap(order => {
-            if (!order.items || !Array.isArray(order.items)) {
-                return [];
-            }
-
-                return order.items.map(item => {
-                    const dish = dishs.rows.find(d => d.id === item.dish_id);
-                    return {
-                        name: dish ? dish.name : "Unknown Item",
-                        quantity: item.quantity || 0,
-                        price: dish ? dish.price : 0,
-                        order_id: order.id,
-                        order_status: order.order_status || 'unknown',
-                        dish_id: item.dish_id,
-                        total: (dish ? dish.price : 0) * (item.quantity || 0)
-                    };
+            // Calculate items and total amount
+            const items = tableOrders.flatMap(order => {
+                if (!order.items || !Array.isArray(order.items)) {
+                    return [];
+                }
+    
+                    return order.items.map(item => {
+                        const dish = dishs.rows.find(d => d.id === item.dish_id);
+                        return {
+                            name: dish ? dish.name : "Unknown Item",
+                            quantity: item.quantity || 0,
+                            price: dish ? dish.price : 0,
+                            order_id: order.id,
+                            order_status: order.order_status || 'unknown',
+                            dish_id: item.dish_id,
+                            total: (dish ? dish.price : 0) * (item.quantity || 0)
+                        };
+                    });
                 });
-            });
-
+            
             const total_amount = items.reduce((sum, item) => sum + item.total, 0);
-            let status = metaData.to_be_cleaned ? "To be cleaned" : metaData.status;
-
-
+            
+            // Determine table status based on the specified conditions
+            let status = "Untouched";
+                console.log(activeBooking)
+            // Check if table is currently booked
             if (activeBooking) {
-                status = activeBooking.is_ready_to_bill ? "Ready to Bill" : "Active";
+                if (activeBooking.is_ready_to_bill) {
+                    status = "Ready to Bill";
+                } else {
+                    status = "Active";
+                }
+                
                 return {
                     table_number: table.table_number,
                     status,
                     booked_at: new Date(activeBooking.created_at).toISOString(),
-                    items,
+                    items, // Show items for active or ready-to-bill tables
                     total_amount,
                     checkout_id: lastCheckout ? lastCheckout.id : null,
                     booking_id: activeBooking.id
                 };
             }
 
+            // Check if table needs cleaning
             if (table.meta_data && (table.meta_data as any).to_be_cleaned === true) {
                 status = "To be Cleaned";
                 return {
                     table_number: table.table_number,
                     status,
                     booked_at: "",
-                    items: [],
+                    items: [], // Don't show items for tables that need cleaning
                     total_amount: 0
                 };
             }
-
+            
+            // If table is not booked, check if last booking's checkout is checked out
             if (lastBooking && lastCheckout && lastCheckout.is_checked_out) {
                 return {
                     table_number: table.table_number,
                     status,
                     booked_at: "",
-                    items: [],
+                    items: [], // Don't show items for untouched tables
                     total_amount: 0
                 };
             }
-
+            
+            // Default case
             return {
                 table_number: table.table_number,
                 status,
@@ -834,7 +847,7 @@ export class DineInService {
                 total_amount: 0
             };
         }));
-
+    
         return tableStats;
     }
 
@@ -851,7 +864,8 @@ export class DineInService {
         }, {
             meta_data: {
                 ...table.meta_data,
-                to_be_cleaned: false,
+                status:"Untouched",
+                to_be_cleaned: false
             },
             updated_at: new Date(),
         });
