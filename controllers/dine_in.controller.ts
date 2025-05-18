@@ -417,7 +417,6 @@ export class DineInController {
             const user_id = ctx.get('user_id');
             
             // Log the table_id being processed
-            console.log('Creating order for table ID:', table_id);
 
             const order = await DineInService.createOrder({ user_id, table_id, booking_id, items });
             return ctx.json({ success: true, data: order });

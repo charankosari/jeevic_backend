@@ -32,7 +32,36 @@ export class AdminController {
           // Fetch categories and dishes
           const dishCategories = await DishCategory.find({});
           const dishes = await Dish.find({});
-
+          const calculateProfitPercentage = () => {
+            const today = currentDate.getDate();
+            const month = currentDate.getMonth() + 1;
+            const year = currentDate.getFullYear();
+            const todayKey = `${today}-${month}-${year}`;
+            const dates = Object.keys(stats.dailyProfits).sort((a, b) => {
+                const [dayA, monthA, yearA] = a.split('-').map(Number);
+                const [dayB, monthB, yearB] = b.split('-').map(Number);
+                return new Date(yearB, monthB - 1, dayB).getTime() - 
+                       new Date(yearA, monthA - 1, dayA).getTime();
+            });
+            const [lastDate, secondLastDate] = dates;
+            if (lastDate === todayKey && secondLastDate) {
+                const currentProfit = stats.dailyProfits[lastDate];
+                const previousProfit = stats.dailyProfits[secondLastDate];
+                
+                if (previousProfit === 0) return '0';
+                
+                const percentage = ((currentProfit - previousProfit) / previousProfit) * 100;
+                return percentage.toFixed(2);
+            } else {
+                // If last date is not today, compare with 0
+                const previousProfit = stats.dailyProfits[lastDate] || 0;
+                if (previousProfit === 0) return '0';
+                
+                const percentage = ((0 - previousProfit) / previousProfit) * 100;
+                return percentage.toFixed(2);
+            }
+          
+        };
           // Transform salesOfProducts into array
           const transformedSalesOfProducts = Object.entries(stats.salesOfProducts).map(([categoryId, count]) => {
               const category = dishCategories.rows.find((cat: IDishCategory) => cat.id === categoryId);
@@ -85,6 +114,7 @@ export class AdminController {
                   date: currentDate.toLocaleDateString('en-GB').split('/').join('-'),
                   dailyProfits: stats.dailyProfits,
                   totalProfit: stats.totalProfit,
+                  profitPercentage: calculateProfitPercentage(),
                   salesOfProducts: transformedSalesOfProducts,
                   salesOfAllProducts: transformedSalesOfAllProducts,
                   peakHours: {
