@@ -58,9 +58,7 @@ export class adminService {
 
             const filteredDailyProfits = getLastRecords(adminStats.dailyProfits);
             const filteredPeakHours = getLastRecords(adminStats.peakHours);
-            const filteredDailyRevenue = getLastRecords(adminStats.revenueHistory);
 
-            // Build the response with clear separation of records
             return {
                 dailyProfits: filteredDailyProfits,
                 totalProfit: Object.values(filteredDailyProfits).reduce((sum, profit) => sum + profit, 0),

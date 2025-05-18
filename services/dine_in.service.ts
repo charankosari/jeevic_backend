@@ -389,6 +389,15 @@ export class DineInService {
             salesOfAllProducts: adminDoc.salesOfAllProducts,
             updated_at: new Date()
         });
+        await DineInTables.updateMany({
+            table_number: table_id, 
+        }, {
+            meta_data: {
+                ...await DineInTables.find({ table_number: table_id }).then(table => table.rows[0]?.meta_data),
+                status: "Active"
+            },
+            updated_at: new Date()
+        });
         return await DineInOrders.create({
             user_id,
             table_id,
