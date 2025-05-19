@@ -203,13 +203,15 @@ export class DineInService {
       updated_at: new Date(),
     });
   };
-  public static readonly isBookingActive = async (booking_id: string): Promise<boolean> => {
+  public static readonly isBookingActive = async (
+    booking_id: string
+  ): Promise<boolean> => {
     const booking = await DineInTableBookings.findById(booking_id);
     if (!booking) {
-        return false;
+      return false;
     }
     return !booking.is_completed && !booking.is_cancelled;
-}
+  };
 
   public static readonly updateBooking = async (
     booking_id: string,
@@ -389,22 +391,28 @@ export class DineInService {
       dish_id: string;
       quantity: number;
       instructions?: string;
+      status?: string;
     }>;
   }): Promise<IDineInOrders> => {
     // Validate that items array is not empty
     if (!items || items.length === 0) {
       throw new Error("Order must contain at least one item");
     }
+
     const dishes = await Dish.find({
       id: {
         $in: items.map((item) => item.dish_id),
       },
     });
+    const pendingItems = items.map((item) => ({
+      ...item,
+      status: "pending",
+    }));
     let adminDoc = await Admin.findOne({});
     if (!adminDoc) {
       throw new Error("Admin document not found");
     }
-    for (const item of items) {
+    for (const item of pendingItems) {
       const dish = dishes.rows.find((d: IDish) => d.id === item.dish_id);
       if (!dish) continue;
       const currentCategoryCount =
@@ -442,7 +450,7 @@ export class DineInService {
       user_id,
       table_id,
       booking_id,
-      items,
+      items: pendingItems,
       is_served: false,
       order_status: "pending",
       created_at: new Date(),
@@ -470,16 +478,26 @@ export class DineInService {
   public static readonly markOrderAsServed = async (
     order_id: string
   ): Promise<void> => {
-    await DineInOrders.updateMany(
-      {
-        id: order_id,
-      },
-      {
-        order_status: "served",
-        is_served: true,
-        updated_at: new Date(),
-      }
-    );
+    const order = await DineInOrders.findById(order_id);
+  if (!order) {
+    throw new Error("Order not found");
+  }const updatedItems = order.items.map(item => {
+    if (item.status === "preparing") {
+      return { ...item, status: "served" };
+    }
+    return item;
+  });
+  await DineInOrders.updateMany(
+    {
+      id: order_id,
+    },
+    {
+      items: updatedItems,
+      order_status: "served",
+      updated_at: new Date(),
+    }
+  );
+
   };
 
   public static readonly markOrderAsCancelled = async (
@@ -499,11 +517,27 @@ export class DineInService {
   public static readonly markOrderAsReady = async (
     order_id: string
   ): Promise<void> => {
+    // Fetch the order to check item statuses
+    const order = await DineInOrders.findById(order_id);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+  
+    // Update item statuses if they are "pending"
+    const updatedItems = order.items.map(item => {
+      if (item.status === "served") {
+        return { ...item, status: "ready" };
+      }
+      return item;
+    });
+  
+    // Update the order with new item statuses and mark as ready
     await DineInOrders.updateMany(
       {
         id: order_id,
       },
       {
+        items: updatedItems,
         order_status: "ready",
         updated_at: new Date(),
       }
@@ -514,11 +548,26 @@ export class DineInService {
   public static readonly markOrderAsPreparing = async (
     order_id: string
   ): Promise<void> => {
+    const order = await DineInOrders.findById(order_id);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+  
+    // Update item statuses if they are "pending"
+    const updatedItems = order.items.map(item => {
+      if (item.status === "pending") {
+        return { ...item, status: "preparing" };
+      }
+      return item;
+    });
+  
+    // Update the order with new item statuses and mark as ready
     await DineInOrders.updateMany(
       {
         id: order_id,
       },
       {
+        items: updatedItems,
         order_status: "preparing",
         updated_at: new Date(),
       }
@@ -886,6 +935,7 @@ export class DineInService {
               name: dish ? dish.name : "Unknown Item",
               quantity: item.quantity || 0,
               price: dish ? dish.price : 0,
+              item_status:item.status || "unknown",
               order_id: order.id,
               order_status: order.order_status || "unknown",
               dish_id: item.dish_id,

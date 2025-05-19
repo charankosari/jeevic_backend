@@ -506,10 +506,12 @@ export class DineInController {
       // If items are provided, merge them with existing items
       let mergedItems = currentOrder.items;
       if (data.items && Array.isArray(data.items)) {
-        mergedItems = [...currentOrder.items, ...data.items];
-        data.order_status = "pending";
+        const newPendingItems = data.items.map((item: any) => ({
+          ...item,
+          status: "pending",
+        }));
+        mergedItems = [...currentOrder.items, ...newPendingItems];
       }
-
       // Prepare the update payload
       const updatePayload = {
         ...data,
@@ -554,7 +556,7 @@ export class DineInController {
       // Replace current items with provided items
       let updatedItems = currentOrder.items;
       if (data.items && Array.isArray(data.items)) {
-        updatedItems = data.items; // Replace current items with new items
+        updatedItems = data.items;
         data.order_status = "pending";
       }
 
