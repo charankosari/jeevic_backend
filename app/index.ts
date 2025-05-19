@@ -33,8 +33,8 @@ app.use(
   cors({
     origin: "*",
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    exposeHeaders: ["Content-Type", "Content-Length"],
+    // allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    // exposeHeaders: ["Content-Type", "Content-Length"],
   })
 );
 app.use(prettyJSON());
