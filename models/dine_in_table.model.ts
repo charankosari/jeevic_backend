@@ -1,12 +1,15 @@
 import { Schema } from 'ottoman';
 import { ottoman } from '../config/ottoman';
-
+interface TableMetaData {
+    status: string;
+    to_be_cleaned: boolean;
+}
 interface IDineInTables {
     id: string;
     table_number: string;
     is_available: boolean;
     capacity: number;
-    meta_data: object;
+    meta_data: TableMetaData;
     created_at: Date;
     updated_at: Date;
 }

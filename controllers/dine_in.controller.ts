@@ -660,6 +660,7 @@ export class DineInController {
     public static readonly updateCheckout = async (c: Context) => {
         try {
             const checkout_id = c.req.param('checkout_id');
+            
             const data = await c.req.json();
             const checkout = await DineInService.updateCheckout(checkout_id, data);
             return c.json({
@@ -774,7 +775,23 @@ export class DineInController {
             }
         }
     };
-
+    public static readonly checkBookingStatus = async (c: Context) => {
+        try {
+            const booking_id = c.req.param('booking_id');
+            const isActive = await DineInService.isBookingActive(booking_id);
+            return c.json({
+                success: true,
+                active_booking: isActive,
+            });
+        } catch (err) {
+            if (err instanceof Error) {
+                return c.json({
+                    success: false,
+                    message: err.message,
+                }, 500);
+            }
+        }
+    };
     // markTableAsCleaned
     public static readonly markTableAsCleaned = async (c: Context) => {
         try {

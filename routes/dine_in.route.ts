@@ -9,6 +9,10 @@ const dineInRoute = new Hono();
 
 dineInRoute.use(authMiddleware());
 
+dineInRoute.get(
+  "/check-booking/:booking_id",
+  DineInController.checkBookingStatus
+);
 dineInRoute.get("/tables", DineInController.getTables);
 dineInRoute.get("/tables/:table_id", DineInController.getTableById);
 dineInRoute.get(
@@ -59,7 +63,6 @@ dineInRoute.get(
 dineInRoute.post("/checkouts", DineInController.createUserEndCheckout);
 
 dineInRoute.post("/available-tables", DineInController.getAvailableTables);
-
 dineInRoute.use(roleMiddleware(true));
 
 dineInRoute.get("/table-stats", DineInController.getTableStats);
