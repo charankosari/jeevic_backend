@@ -1,6 +1,7 @@
 import { type Context } from "hono";
 
 import { DineInService } from "../services/dine_in.service";
+import { type IOrderItem } from "../models/dine_in_order.model";
 export class DineInController {
   public static readonly getTables = async (c: Context) => {
     try {
@@ -513,9 +514,24 @@ export class DineInController {
         mergedItems = [...currentOrder.items, ...newPendingItems];
       }
       // Prepare the update payload
+      const statusHierarchy: Array<IOrderItem["status"]> = [
+        "pending",
+        "preparing",
+        "served",
+        "ready",
+      ];
+      // Find the highest‐priority status present in mergedItems
+      let computedOrderStatus = "ready"; // default if no items
+      for (const status of statusHierarchy) {
+        if (mergedItems.some((it) => it.status === status)) {
+          computedOrderStatus = status!;
+          break;
+        }
+      }
       const updatePayload = {
         ...data,
         items: mergedItems,
+        order_status: computedOrderStatus,
       };
 
       const order = await DineInService.updateOrder(order_id, updatePayload);
