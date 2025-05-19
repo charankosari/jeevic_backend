@@ -33,7 +33,7 @@ app.use(
   cors({
     origin: "*",
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    // allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     exposeHeaders: ["Content-Type", "Content-Length"],
   })
 );
@@ -68,10 +68,10 @@ app.route("/dish", dishRoute);
 app.route("/dine-in", dineInRoute);
 app.route("/upload", uploadRoute);
 app.route("/cafe/auth", cafeAuthRoute);
-app.route("/banner", bannerRoute); 
+app.route("/banner", bannerRoute);
 // admin routes
 
-app.route("/admin", adminRoute); 
+app.route("/admin", adminRoute);
 showRoutes(app);
 
 export { app };
