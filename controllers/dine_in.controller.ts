@@ -469,7 +469,49 @@ export class DineInController {
             }
         }
     }
-
+    public static readonly updateOrDeleteOrder = async (c: Context) => {
+        try {
+            const order_id = c.req.param('order_id');
+            const data = await c.req.json();
+    
+            // Fetch the current order
+            const currentOrder = await DineInService.getOrderById(order_id);
+    
+            if (!currentOrder) {
+                return c.json({
+                    success: false,
+                    message: "Order not found",
+                }, 404);
+            }
+    
+            // Replace current items with provided items
+            let updatedItems = currentOrder.items;
+            if (data.items && Array.isArray(data.items)) {
+                updatedItems = data.items; // Replace current items with new items
+                data.order_status = 'pending';
+            }
+    
+            // Prepare the update payload
+            const updatePayload = {
+                ...data,
+                items: updatedItems
+            };
+    
+            const order = await DineInService.updateOrder(order_id, updatePayload);
+            return c.json({
+                success: true,
+                data: order,
+            });
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                return c.json({
+                    success: false,
+                    message: err.message,
+                }, 500);
+            }
+        }
+    }
     public static readonly deleteOrder = async (c: Context) => {
         try {
             const order_id = c.req.param('order_id');

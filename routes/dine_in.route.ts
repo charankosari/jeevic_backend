@@ -42,6 +42,7 @@ dineInRoute.get("/orders/user", DineInController.getOrdersByUserId);
 dineInRoute.get("/orders/table/:table_id", DineInController.getOrdersByTableId);
 dineInRoute.post("/orders", DineInController.createOrder);
 dineInRoute.patch("/orders/:order_id", DineInController.updateOrder);
+
 dineInRoute.post(
   "/orders/cancel/:order_id",
   DineInController.markOrderAsCancelled
@@ -67,7 +68,7 @@ dineInRoute.use(roleMiddleware(true));
 
 dineInRoute.get("/table-stats", DineInController.getTableStats);
 dineInRoute.get("/reservations", DineInController.getReservations);
-
+dineInRoute.patch("/orders/update/:order_id", DineInController.updateOrDeleteOrder);
 dineInRoute.get("/checkouts", DineInController.getCheckouts);
 dineInRoute.patch("/checkouts/:checkout_id", DineInController.updateCheckout);
 dineInRoute.delete("/checkouts/:checkout_id", DineInController.deleteCheckout);
