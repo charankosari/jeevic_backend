@@ -479,25 +479,25 @@ export class DineInService {
     order_id: string
   ): Promise<void> => {
     const order = await DineInOrders.findById(order_id);
-  if (!order) {
-    throw new Error("Order not found");
-  }const updatedItems = order.items.map(item => {
-    if (item.status === "preparing") {
-      return { ...item, status: "served" };
+    if (!order) {
+      throw new Error("Order not found");
     }
-    return item;
-  });
-  await DineInOrders.updateMany(
-    {
-      id: order_id,
-    },
-    {
-      items: updatedItems,
-      order_status: "served",
-      updated_at: new Date(),
-    }
-  );
-
+    const updatedItems = order.items.map((item) => {
+      if (item.status === "preparing") {
+        return { ...item, status: "served" };
+      }
+      return item;
+    });
+    await DineInOrders.updateMany(
+      {
+        id: order_id,
+      },
+      {
+        items: updatedItems,
+        order_status: "served",
+        updated_at: new Date(),
+      }
+    );
   };
 
   public static readonly markOrderAsCancelled = async (
@@ -522,15 +522,15 @@ export class DineInService {
     if (!order) {
       throw new Error("Order not found");
     }
-  
+
     // Update item statuses if they are "pending"
-    const updatedItems = order.items.map(item => {
+    const updatedItems = order.items.map((item) => {
       if (item.status === "served") {
         return { ...item, status: "ready" };
       }
       return item;
     });
-  
+
     // Update the order with new item statuses and mark as ready
     await DineInOrders.updateMany(
       {
@@ -552,15 +552,15 @@ export class DineInService {
     if (!order) {
       throw new Error("Order not found");
     }
-  
+
     // Update item statuses if they are "pending"
-    const updatedItems = order.items.map(item => {
+    const updatedItems = order.items.map((item) => {
       if (item.status === "pending") {
         return { ...item, status: "preparing" };
       }
       return item;
     });
-  
+
     // Update the order with new item statuses and mark as ready
     await DineInOrders.updateMany(
       {
@@ -734,6 +734,11 @@ export class DineInService {
     const today = new Date();
     const dateKey = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
     const currentDailyProfit = adminDoc.dailyProfits[dateKey] || 0;
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayKey = `${yesterday.getDate()}-${yesterday.getMonth() + 1}-${yesterday.getFullYear()}`;
+    const yesterdayRevenue = adminDoc.revenueHistory[yesterdayKey] || 0;
+    adminDoc.revenueHistory[dateKey] = yesterdayRevenue + checkout.total_price;
     adminDoc.dailyProfits[dateKey] = currentDailyProfit + checkout.total_price;
     adminDoc.totalProfit = (adminDoc.totalProfit || 0) + checkout.total_price;
     await Admin.updateById(adminDoc.id, {
@@ -935,7 +940,7 @@ export class DineInService {
               name: dish ? dish.name : "Unknown Item",
               quantity: item.quantity || 0,
               price: dish ? dish.price : 0,
-              item_status:item.status || "unknown",
+              item_status: item.status || "unknown",
               order_id: order.id,
               order_status: order.order_status || "unknown",
               dish_id: item.dish_id,
