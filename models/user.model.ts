@@ -13,6 +13,7 @@ interface IUser {
     phone_otp: string;
     email_otp: string;
     role: string;
+    employeeid?: string;
     is_email_verified: boolean;
     is_mobile_verified: boolean;
     created_at: Date;
@@ -29,6 +30,7 @@ const UserSchema = new Schema({
     points: { type: Number, default: 0 },
     phone_otp: String,
     email_otp: String,
+    employeeid: String,
     role: { type: String, default: 'user' },
     is_email_verified: { type: Boolean, default: false },
     is_mobile_verified: { type: Boolean, default: false },

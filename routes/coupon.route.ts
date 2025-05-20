@@ -8,14 +8,14 @@ const couponRoute = new Hono();
 
 couponRoute.use(authMiddleware());
 
-couponRoute.put('/code', CouponController.getCouponByCode);
+couponRoute.put("/code", CouponController.getCouponByCode);
 
-couponRoute.use(roleMiddleware(true));
+couponRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 
-couponRoute.get('/', CouponController.getCoupons);
-couponRoute.get('/:coupon_id', CouponController.getCoupon);
-couponRoute.post('/', CouponController.createCoupon);
-couponRoute.patch('/:coupon_id', CouponController.updateCoupon);
-couponRoute.delete('/:coupon_id', CouponController.deleteCoupon);
+couponRoute.get("/", CouponController.getCoupons);
+couponRoute.get("/:coupon_id", CouponController.getCoupon);
+couponRoute.post("/", CouponController.createCoupon);
+couponRoute.patch("/:coupon_id", CouponController.updateCoupon);
+couponRoute.delete("/:coupon_id", CouponController.deleteCoupon);
 
 export { couponRoute };

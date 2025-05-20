@@ -10,12 +10,21 @@ subcategoryRoute.use(authMiddleware());
 
 subcategoryRoute.get("/", SubcategoryController.getSubCategories);
 subcategoryRoute.get("/:subcategory_id", SubcategoryController.getSubCategory);
-subcategoryRoute.get("/c/:category_id", SubcategoryController.getSubCategoriesByCategory);
+subcategoryRoute.get(
+  "/c/:category_id",
+  SubcategoryController.getSubCategoriesByCategory
+);
 
-subcategoryRoute.use(roleMiddleware(true));
+subcategoryRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 
 subcategoryRoute.post("/", SubcategoryController.createCategory);
-subcategoryRoute.patch("/:subcategory_id", SubcategoryController.updateCategory);
-subcategoryRoute.delete("/:subcategory_id", SubcategoryController.deleteCategory);
+subcategoryRoute.patch(
+  "/:subcategory_id",
+  SubcategoryController.updateCategory
+);
+subcategoryRoute.delete(
+  "/:subcategory_id",
+  SubcategoryController.deleteCategory
+);
 
 export { subcategoryRoute };

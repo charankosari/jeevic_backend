@@ -8,13 +8,19 @@ const giftoptionRoute = new Hono();
 
 giftoptionRoute.use(authMiddleware());
 
-giftoptionRoute.get('/', GiftOptionsController.getGiftOptions);
-giftoptionRoute.get('/:giftoption_id', GiftOptionsController.getGiftOption);
+giftoptionRoute.get("/", GiftOptionsController.getGiftOptions);
+giftoptionRoute.get("/:giftoption_id", GiftOptionsController.getGiftOption);
 
-giftoptionRoute.use(roleMiddleware(true));
+giftoptionRoute.use(roleMiddleware(["admin", "ecommerce_admin_admin"]));
 
-giftoptionRoute.post('/', GiftOptionsController.createGiftOption);
-giftoptionRoute.patch('/:giftoption_id', GiftOptionsController.updateGiftOption);
-giftoptionRoute.delete('/:giftoption_id', GiftOptionsController.deleteGiftOption);
+giftoptionRoute.post("/", GiftOptionsController.createGiftOption);
+giftoptionRoute.patch(
+  "/:giftoption_id",
+  GiftOptionsController.updateGiftOption
+);
+giftoptionRoute.delete(
+  "/:giftoption_id",
+  GiftOptionsController.deleteGiftOption
+);
 
 export { giftoptionRoute };

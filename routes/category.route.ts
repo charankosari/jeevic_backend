@@ -8,13 +8,13 @@ const categoryRoute = new Hono();
 
 categoryRoute.use(authMiddleware());
 
-categoryRoute.get('/', CategoryController.getCategories);
-categoryRoute.get('/:category_id', CategoryController.getCategory);
+categoryRoute.get("/", CategoryController.getCategories);
+categoryRoute.get("/:category_id", CategoryController.getCategory);
 
-categoryRoute.use(roleMiddleware(true));
+categoryRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 
-categoryRoute.post('/', CategoryController.createCategory);
-categoryRoute.patch('/:category_id', CategoryController.updateCategory);
-categoryRoute.delete('/:category_id', CategoryController.deleteCategory);
+categoryRoute.post("/", CategoryController.createCategory);
+categoryRoute.patch("/:category_id", CategoryController.updateCategory);
+categoryRoute.delete("/:category_id", CategoryController.deleteCategory);
 
 export { categoryRoute };

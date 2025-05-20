@@ -1,5 +1,8 @@
 import { type Context } from "hono";
 import { adminService } from "../services/admin.service";
+import { UserService } from "../services/user.service";
+import { User } from "../models/user.model";
+import { v4 as uuidv4 } from "uuid";
 import {
   DishCategory,
   type IDishCategory,
@@ -27,7 +30,190 @@ export class AdminController {
       );
     }
   };
+  // staff management
 
+  public static readonly createEmployee = async (ctx: Context) => {
+    try {
+      const {
+        first_name,
+        last_name,
+        email,
+        country_code,
+        phone_number,
+        profile_picture,
+        role,
+      } = await ctx.req.json();
+      const tempid = uuidv4();
+      const employeeid = tempid.replace(/-/g, "").substr(0, 6).toUpperCase();
+
+      const newUser = new User({
+        id: tempid,
+        first_name,
+        last_name,
+        email,
+        country_code,
+        phone_number,
+        profile_picture,
+        employeeid,
+        points: 0, // Default points
+        phone_otp: "", // Default empty string
+        email_otp: "", // Default empty string
+        role: role, // Default role
+        is_email_verified: true,
+        is_mobile_verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      await newUser.save();
+
+      return ctx.json({
+        success: true,
+        message: "Employee created successfully",
+        data: newUser,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json(
+          {
+            success: false,
+            message: error.message,
+          },
+          400
+        );
+      }
+    }
+  };
+  public static readonly getEmployees = async (ctx: Context) => {
+    try {
+      const allUsers = await User.find({}).then(
+        (result: any) => result.rows || result
+      );
+      const employees = allUsers.filter((user: any) => user.role !== "user");
+      return ctx.json({
+        success: true,
+        data: employees,
+      });
+    } catch (error) {
+      return ctx.json(
+        {
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch employees",
+        },
+        500
+      );
+    }
+  };
+  public static readonly getEmployeeById = async (ctx: Context) => {
+    try {
+      const { staff_id } = ctx.req.param();
+      const employee = await User.findById(staff_id);
+      if (!employee) {
+        return ctx.json(
+          {
+            success: false,
+            message: "Employee not found",
+          },
+          404
+        );
+      }
+      return ctx.json({
+        success: true,
+        data: employee,
+      });
+    } catch (error) {
+      return ctx.json(
+        {
+          success: false,
+          message:
+            error instanceof Error ? error.message : "Failed to fetch employee",
+        },
+        500
+      );
+    }
+  };
+  public static readonly updateEmployee = async (ctx: Context) => {
+    try {
+      const { staff_id } = ctx.req.param();
+      const {
+        first_name,
+        last_name,
+        profile_picture,
+        role,
+        phone_number,
+        email,
+      } = await ctx.req.json();
+
+      // Use UserService to update the user
+      const response = await UserService.updateUser(staff_id, {
+        first_name,
+        last_name,
+        profile_picture,
+        role,
+        phone_number,
+        email,
+      });
+
+      if (!response) {
+        return ctx.json(
+          {
+            success: false,
+            message: "Employee not found",
+          },
+          404
+        );
+      }
+
+      return ctx.json({
+        success: true,
+        message: "Employee updated successfully",
+        data: response,
+      });
+    } catch (error) {
+      return ctx.json(
+        {
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to update employee",
+        },
+        500
+      );
+    }
+  };
+  public static readonly deleteEmployee = async (ctx: Context) => {
+    try {
+      const { staff_id } = ctx.req.param();
+      const deletedEmployee = await User.findOneAndRemove({ id: staff_id });
+      if (!deletedEmployee) {
+        return ctx.json(
+          {
+            success: false,
+            message: "Employee not found",
+          },
+          404
+        );
+      }
+      return ctx.json({
+        success: true,
+        message: "Employee deleted successfully",
+      });
+    } catch (error) {
+      return ctx.json(
+        {
+          success: false,
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to delete employee",
+        },
+        500
+      );
+    }
+  };
   public static readonly getAdminStats = async (c: Context) => {
     try {
       // Ensure admin doc exists

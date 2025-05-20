@@ -20,7 +20,7 @@ dishRoute.get(
   DishController.getDishesByCategoryId
 );
 
-dishRoute.use(roleMiddleware(true));
+dishRoute.use(roleMiddleware(["admin", "cafe_admin"]));
 
 dishRoute.post("/categories", DishController.createDishCategory);
 dishRoute.patch(
