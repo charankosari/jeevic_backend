@@ -573,7 +573,6 @@ export class DineInController {
       let updatedItems = currentOrder.items;
       if (data.items && Array.isArray(data.items)) {
         updatedItems = data.items;
-        data.order_status = "pending";
       }
 
       // Prepare the update payload
@@ -587,7 +586,6 @@ export class DineInController {
 
       // Prepare the update payload
       const updatePayload = {
-        ...data,
         items: updatedItems,
       };
 
