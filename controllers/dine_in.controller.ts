@@ -388,9 +388,9 @@ export class DineInController {
         return c.json(
           {
             success: false,
-            message: err.message,
+            message: "orders not found",
           },
-          500
+          200
         );
       }
     }
