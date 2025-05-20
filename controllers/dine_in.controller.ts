@@ -946,6 +946,7 @@ export class DineInController {
   public static readonly checkBookingStatus = async (c: Context) => {
     try {
       const booking_id = c.req.param("booking_id");
+      // const user_id = c.req.get()
       const isActive = await DineInService.isBookingActive(booking_id);
       return c.json({
         success: true,
@@ -956,13 +957,22 @@ export class DineInController {
         return c.json(
           {
             success: false,
-            message: err.message,
+            active_booking: false,
           },
-          500
+          200
         );
       }
+      // Fallback for non-Error throws
+      return c.json(
+        {
+          success: false,
+          active_booking: false,
+        },
+        200
+      );
     }
   };
+
   // markTableAsCleaned
   public static readonly markTableAsCleaned = async (c: Context) => {
     try {
