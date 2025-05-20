@@ -8,11 +8,11 @@ const authRoute = new Hono();
 authRoute.post("/login-request", AuthController.requestAccountAccess);
 // Add support for Email based login
 authRoute.post("/verify-account-access", AuthController.verifyAccountAccess);
-authRoute.post("/user/email", AuthController.setEmailForVerification);
-authRoute.post("/user/verify-email", AuthController.verifyEmail);
+
 // TODO: Add Web Account Creation Route
 authRoute.use(authMiddleware());
-
+authRoute.post("/user/email", AuthController.setEmailForVerification);
+authRoute.post("/user/verify-email", AuthController.verifyEmail);
 authRoute.get("/user", AuthController.getUser);
 authRoute.patch("/user", AuthController.updateUser);
 
