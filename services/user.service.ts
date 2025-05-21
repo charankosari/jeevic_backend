@@ -3,7 +3,8 @@ import { sign } from "hono/jwt";
 import { generateOTP } from "../helpers/otp";
 import { User, type IUser } from "../models/user.model";
 import { config } from "../config/env";
-import { twilioClient, twilioPhoneNumber } from "../libs/sms/twillo";
+// import { twilioClient, twilioPhoneNumber } from "../libs/sms/twillo";
+import { sendOtp } from "../libs/sms/renflair";
 
 export class UserService {
   public static readonly requestAccountAccess = async (
@@ -31,12 +32,12 @@ export class UserService {
         updated_at: new Date(),
       });
 
-      await twilioClient.messages.create({
-        to: `+${country_code}${phone_number}`,
-        from: twilioPhoneNumber,
-        body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
-      });
-
+      // await twilioClient.messages.create({
+      //   to: `+${country_code}${phone_number}`,
+      //   from: twilioPhoneNumber,
+      //   body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
+      // });
+      await sendOtp(phone_number, otp);
       return {
         message: "Account created successfully",
       };
@@ -54,12 +55,12 @@ export class UserService {
         }
       );
 
-      await twilioClient.messages.create({
-        to: `+${country_code}${phone_number}`,
-        from: twilioPhoneNumber,
-        body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
-      });
-
+      // await twilioClient.messages.create({
+      //   to: `+${country_code}${phone_number}`,
+      //   from: twilioPhoneNumber,
+      //   body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
+      // });
+      await sendOtp(phone_number, otp);
       return {
         message: "Account access requested successfully",
       };

@@ -3,8 +3,8 @@ import { sign } from "hono/jwt";
 import { generateOTP } from "../helpers/otp";
 import { CUser, type ICUser } from "../models/cafe.users.model";
 import { config } from "../config/env";
-import { twilioClient, twilioPhoneNumber } from "../libs/sms/twillo";
-
+// import { twilioClient, twilioPhoneNumber } from "../libs/sms/twillo";
+import { sendOtp } from "../libs/sms/renflair";
 export class cafeUserService {
   public static readonly requestAccountAccess = async (
     country_code: string,
@@ -29,12 +29,12 @@ export class cafeUserService {
         updated_at: new Date(),
       });
 
-      await twilioClient.messages.create({
-        to: `+${country_code}${phone_number}`,
-        from: twilioPhoneNumber,
-        body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
-      });
-
+      // await twilioClient.messages.create({
+      //   to: `+${country_code}${phone_number}`,
+      //   from: twilioPhoneNumber,
+      //   body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
+      // });
+      await sendOtp(phone_number, otp);
       return {
         message: "Account created successfully",
       };
@@ -52,12 +52,12 @@ export class cafeUserService {
         }
       );
 
-      await twilioClient.messages.create({
-        to: `+${country_code}${phone_number}`,
-        from: twilioPhoneNumber,
-        body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
-      });
-
+      // await twilioClient.messages.create({
+      //   to: `+${country_code}${phone_number}`,
+      //   from: twilioPhoneNumber,
+      //   body: `Hi,\nYour OTP for Jeevic is ${otp}.\n\nThanks,\nTeam Jeevic`,
+      // });
+      await sendOtp(phone_number, otp);
       return {
         message: "Account access requested successfully",
       };
@@ -125,16 +125,18 @@ export class cafeUserService {
   public static readonly getUsers = async () => {
     const users = await CUser.find({});
     const usersCount = users.rows ? users.rows.length : 0;
-    
+
     // Remove phone_otp from each user
-    const sanitizedUsers = users.rows.map(({ phone_otp, ...rest }: ICUser) => rest);
-    
+    const sanitizedUsers = users.rows.map(
+      ({ phone_otp, ...rest }: ICUser) => rest
+    );
+
     return {
-        users: {
-            rows: sanitizedUsers,
-            meta: users.meta
-        },
-        usersCount
+      users: {
+        rows: sanitizedUsers,
+        meta: users.meta,
+      },
+      usersCount,
     };
-  }
+  };
 }
