@@ -25,6 +25,7 @@ import { uploadRoute } from "../routes/upload.route";
 import { cafeAuthRoute } from "../routes/cafe.auth.route";
 import { bannerRoute } from "../routes/banner.route";
 import { adminRoute } from "../routes/admin.route";
+import { messageRoute } from "../routes/message.route";
 
 const app = new Hono();
 
@@ -69,6 +70,7 @@ app.route("/dine-in", dineInRoute);
 app.route("/upload", uploadRoute);
 app.route("/cafe/auth", cafeAuthRoute);
 app.route("/banner", bannerRoute);
+app.route("/message", messageRoute)
 // admin routes
 
 app.route("/admin", adminRoute);

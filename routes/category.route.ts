@@ -6,10 +6,9 @@ import { roleMiddleware } from "../middlewares/role.middleware";
 
 const categoryRoute = new Hono();
 
-categoryRoute.use(authMiddleware());
-
 categoryRoute.get("/", CategoryController.getCategories);
 categoryRoute.get("/:category_id", CategoryController.getCategory);
+categoryRoute.use(authMiddleware());
 
 categoryRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 

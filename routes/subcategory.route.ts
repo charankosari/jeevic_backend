@@ -6,14 +6,13 @@ import { roleMiddleware } from "../middlewares/role.middleware";
 
 const subcategoryRoute = new Hono();
 
-subcategoryRoute.use(authMiddleware());
-
 subcategoryRoute.get("/", SubcategoryController.getSubCategories);
 subcategoryRoute.get("/:subcategory_id", SubcategoryController.getSubCategory);
 subcategoryRoute.get(
   "/c/:category_id",
   SubcategoryController.getSubCategoriesByCategory
 );
+subcategoryRoute.use(authMiddleware());
 
 subcategoryRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 
