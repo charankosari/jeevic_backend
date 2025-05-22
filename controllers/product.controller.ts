@@ -1,6 +1,8 @@
 import type { Context } from "hono";
 
 import { ProductService } from "../services/product.service";
+import { User } from "../models/user.model";
+import { UserService } from "../services/user.service";
 
 export class ProductController {
   public static readonly getProductsByCategory = async (ctx: Context) => {
@@ -164,6 +166,7 @@ export class ProductController {
 
   public static readonly searchProducts = async (ctx: Context) => {
     try {
+      const user_id = ctx.get("user_id");
       const {
         query,
         limit = 10,
@@ -173,7 +176,27 @@ export class ProductController {
         limit?: number;
         page?: number;
       };
-
+      const user = await User.findById(user_id);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      let searchHistory: string[] = [];
+      if (user.meta_data?.searchhistory) {
+        try {
+          searchHistory = JSON.parse(user.meta_data.searchhistory);
+        } catch (err) {
+          // if parsing fails, reset history
+          searchHistory = [];
+        }
+      }
+      searchHistory.push(query);
+      await User.updateById(user_id, {
+        meta_data: {
+          ...user.meta_data,
+          searchhistory: JSON.stringify(searchHistory),
+        },
+        updated_at: new Date(),
+      });
       const response = await ProductService.searchProduct(
         {
           query,
