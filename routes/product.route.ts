@@ -7,6 +7,10 @@ import { roleMiddleware } from "../middlewares/role.middleware";
 const productRoute = new Hono();
 
 productRoute.use(authMiddleware());
+// discover new products route
+productRoute.get("/newitems", ProductController.getLatestProducts);
+//just for you route
+productRoute.get("/justforyou", ProductController.getUserProducts);
 
 productRoute.get("/c/:category_id", ProductController.getProductsByCategory);
 productRoute.get(

@@ -272,4 +272,39 @@ export class ProductController {
       }
     }
   };
+  public static readonly getLatestProducts = async (ctx: Context) => {
+    try {
+      const response = await ProductService.getLatestProducts();
+      return ctx.json({
+        success: true,
+        data: response,
+      });
+    } catch (error) {
+      return ctx.json(
+        {
+          success: false,
+          message: error instanceof Error ? error.message : "Failed to fetch latest products",
+        },
+        500
+      );
+    }
+  };
+  public static readonly getUserProducts = async (ctx: Context) => {
+    try {
+      const user_id = ctx.get("user_id");
+      const response = await ProductService.getUserRecommendedProducts(user_id);
+      return ctx.json({
+        success: true,
+        data: response,
+      });
+    } catch (error) {
+      return ctx.json(
+        {
+          success: false,
+          message: error instanceof Error ? error.message : "Failed to fetch recommended products",
+        },
+        500
+      );
+    }
+  };
 }

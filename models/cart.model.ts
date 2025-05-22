@@ -7,7 +7,7 @@ interface ICart {
     product_id: string;
     quantity: number;
     meta_data: Record<string, string>;
-    created_at: Date;
+    created_at: Date;   
     updated_at: Date;
 }
 

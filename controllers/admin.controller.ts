@@ -63,6 +63,7 @@ export class AdminController {
         is_mobile_verified: true,
         created_at: new Date(),
         updated_at: new Date(),
+        meta_data: {},
       });
       await newUser.save();
 
