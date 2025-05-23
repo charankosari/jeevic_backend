@@ -244,7 +244,7 @@ export class OrderController {
         webhook_secret: config.RAZORPAY_HOOK_SECRET,
         payload: JSON.stringify(webhook_payload),
       });
-
+      console.log(is_valid);
       await OrderController.handleRazorpayEvent(webhook_payload, is_valid);
 
       return ctx.json({
@@ -286,14 +286,17 @@ export class OrderController {
           webhook_payload,
           is_valid
         );
+        console.log("authorized");
         break;
       }
       case "payment.failed": {
         await OrderController.handlePaymentFailed(webhook_payload, is_valid);
+        console.log("failed");
         break;
       }
       case "payment.captured": {
         await OrderController.handlePaymentCaptured(webhook_payload, is_valid);
+        console.log("captured");
         break;
       }
       default: {
