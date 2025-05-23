@@ -374,6 +374,7 @@ export class OrderController {
       webhook_payload.payload.payment.entity.notes.platform_order_id;
     const { user_id } = await OrderService.updateOrder(order_id, {
       status: "completed",
+      payment_status: "completed",
     });
 
     // Clear Cart
