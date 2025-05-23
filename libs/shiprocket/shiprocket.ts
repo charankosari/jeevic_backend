@@ -82,6 +82,13 @@ export const trackByAwb = async (awbCode: string) => {
   });
   return res.data;
 };
+export const trackByOrder = async (orderId: string) => {
+  const headers = await getAuthHeaders();
+  const res = await axios.get(`${BASE_URL}/courier/track/?order_id${orderId}`, {
+    headers,
+  });
+  return res.data;
+};
 
 // Track by Shipment ID
 export const trackByShipmentId = async (shipmentId: string) => {

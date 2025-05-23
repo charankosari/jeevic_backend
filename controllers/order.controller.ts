@@ -9,6 +9,7 @@ import { GiftCardService } from "../services/giftcard.service";
 import { ProductService } from "../services/product.service";
 import { RazorpayService } from "../libs/payments/razorpay";
 import { SaleService } from "../services/sale.service";
+import {getAllOrders,trackByOrder} from "../libs/shiprocket/shiprocket";
 import { config } from "../config/env";
 export class OrderController {
   public static readonly getOrdersByUserID = async (ctx: Context) => {
@@ -405,4 +406,25 @@ export class OrderController {
 
     return webhook_signature === generated_signature;
   }
+  public static readonly getAllOrders = async (ctx: Context) => {
+    try {
+      const orders = await getAllOrders();
+      return ctx.json({ success: true, data: orders });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
+    }
+  };
+  public static readonly trackOrderById = async (ctx: Context) => {
+    try {
+      const { orderId } = ctx.req.param();
+      const trackingInfo = await trackByOrder(orderId);
+      return ctx.json({ success: true, data: trackingInfo });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
+    }
+  };
 }
