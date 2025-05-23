@@ -238,6 +238,7 @@ export class OrderService {
       order_date: formattedDate,
       pickup_location: "Home",
       billing_customer_name: address.name,
+      billing_last_name: user.last_name || "",
       billing_address: address.address_line_1,
       billing_city: address.city,
       billing_pincode: address.postcode,
