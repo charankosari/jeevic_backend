@@ -216,21 +216,26 @@ export class OrderService {
 
     // Save new Shipping Order
     const orderDate = new Date(order.created_at);
-    const formattedDate =
-      orderDate.getFullYear() +
-      "-" +
-      String(orderDate.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(orderDate.getDate()).padStart(2, "0") +
-      " " +
-      String(orderDate.getHours()).padStart(2, "0") +
-      ":" +
-      String(orderDate.getMinutes()).padStart(2, "0");
 
-    console.log(formattedDate);
+    // Convert to IST
+    const istOffset = 330; // IST is +5:30 in minutes
+    const istTime = new Date(orderDate.getTime() + istOffset * 60000);
+
+    // Format to "YYYY-MM-DD HH:mm"
+    const formattedDate =
+      istTime.getFullYear() +
+      "-" +
+      String(istTime.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(istTime.getDate()).padStart(2, "0") +
+      " " +
+      String(istTime.getHours()).padStart(2, "0") +
+      ":" +
+      String(istTime.getMinutes()).padStart(2, "0");
+
     const shiprocketOrderData = {
       order_id: ship_order_id,
-      order_date: orderDate,
+      order_date: formattedDate,
       pickup_location: "Home",
       billing_customer_name: address.name,
       billing_address: address.address_line_1,
