@@ -369,19 +369,19 @@ export class OrderController {
     },
     is_valid: boolean
   ) {
-    if (is_valid) {
-      const order_id =
-        webhook_payload.payload.payment.entity.notes.platform_order_id;
-      const { user_id } = await OrderService.updateOrder(order_id, {
-        status: "completed",
-      });
+    // if (is_valid) {
+    const order_id =
+      webhook_payload.payload.payment.entity.notes.platform_order_id;
+    const { user_id } = await OrderService.updateOrder(order_id, {
+      status: "completed",
+    });
 
-      // Clear Cart
-      await CartService.clearCart(user_id);
+    // Clear Cart
+    await CartService.clearCart(user_id);
 
-      // Update Product Stock
-      await OrderService.updateProductStock(order_id);
-    }
+    // Update Product Stock
+    await OrderService.updateProductStock(order_id);
+    // }
   }
 
   static async validateSignature({
