@@ -88,7 +88,7 @@ export const trackByOrder = async (orderId: string) => {
     console.log("🚀 Sending tracking request for order ID:", orderId);
 
     const res = await axios.get(
-      `${BASE_URL}/courier/track/?order_id=${orderId}`,
+      `${BASE_URL}/courier/track?order_id=${orderId}`,
       { headers }
     );
 
