@@ -12,9 +12,9 @@ export class AddressController {
         address_line_1,
         address_line_2,
         postcode,
-        phone_number,
         city,
         state,
+        phone_number,
         email,
         name,
       } = await ctx.req.json();
@@ -25,9 +25,9 @@ export class AddressController {
         address_line_1,
         address_line_2,
         postcode,
-        phone_number,
         city,
         state,
+        phone_number,
         email,
         name
       );

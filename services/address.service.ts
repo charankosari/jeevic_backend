@@ -18,9 +18,9 @@ export class AddressService {
       country,
       address_line_1,
       address_line_2,
+      postcode,
       city,
       state,
-      postcode,
       phone_number,
       email,
       name,
@@ -39,11 +39,11 @@ export class AddressService {
     address_line_1: string,
     address_line_2: string,
     postcode: string,
+    city: string,
+    state: string,
     phone_number: string,
     email: string,
-    name: string,
-    city: string,
-    state: string
+    name: string
   ): Promise<void> => {
     await Address.updateMany(
       {
@@ -55,11 +55,11 @@ export class AddressService {
         address_line_1,
         address_line_2,
         postcode,
-        phone_number,
         city,
+        state,
+        phone_number,
         email,
         name,
-        state,
         updated_at: new Date(),
       }
     );
