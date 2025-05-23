@@ -15,6 +15,8 @@ export class AddressController {
         phone_number,
         city,
         state,
+        email,
+        name,
       } = await ctx.req.json();
 
       const response = await AddressService.createAddress(
@@ -25,7 +27,9 @@ export class AddressController {
         postcode,
         phone_number,
         city,
-        state
+        state,
+        email,
+        name
       );
 
       return ctx.json(response);
@@ -55,6 +59,8 @@ export class AddressController {
         phone_number,
         city,
         state,
+        email,
+        name,
       } = await ctx.req.json();
 
       await AddressService.updateAddress(
@@ -66,7 +72,9 @@ export class AddressController {
         postcode,
         phone_number,
         city,
-        state
+        state,
+        email,
+        name
       );
 
       return ctx.json({

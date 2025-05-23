@@ -240,6 +240,7 @@ export class OrderService {
     };
     console.log(shiprocketOrderData);
     const response = await createOrder(shiprocketOrderData);
+    console.log(response);
     // Update existing Order with ship_order_id
     await Order.updateMany({ id: order.id }, { ship_order_id: ship_order_id });
     return response;

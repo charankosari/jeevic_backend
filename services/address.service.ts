@@ -9,7 +9,9 @@ export class AddressService {
     postcode: string,
     city: string,
     state: string,
-    phone_number: string
+    phone_number: string,
+    email: string,
+    name: string
   ): Promise<string> => {
     const data = await Address.create({
       user_id,
@@ -20,6 +22,8 @@ export class AddressService {
       state,
       postcode,
       phone_number,
+      email,
+      name,
       is_default: false,
       created_at: new Date(),
       updated_at: new Date(),
@@ -36,6 +40,8 @@ export class AddressService {
     address_line_2: string,
     postcode: string,
     phone_number: string,
+    email: string,
+    name: string,
     city: string,
     state: string
   ): Promise<void> => {
@@ -51,6 +57,8 @@ export class AddressService {
         postcode,
         phone_number,
         city,
+        email,
+        name,
         state,
         updated_at: new Date(),
       }

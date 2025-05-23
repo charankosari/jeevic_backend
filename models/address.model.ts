@@ -6,6 +6,8 @@ interface IAddress {
   user_id: string;
   country: string;
   city: string;
+  email: string;
+  name: string;
   state: string;
   address_line_1: string;
   address_line_2: string;
@@ -21,6 +23,8 @@ const UserSchema = new Schema({
   country: String,
   city: String,
   state: String,
+  email: String,
+  name: String,
   address_line_1: String,
   address_line_2: String,
   postcode: String,
