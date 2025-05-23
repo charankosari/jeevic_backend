@@ -235,16 +235,17 @@ export class OrderController {
   public static readonly captureHook = async (ctx: Context) => {
     try {
       const webhook_headers = ctx.req.header();
-      const webhook_payload = await ctx.req.json();
-      console.log("razerpay hook");
+      const rawPayload = await ctx.req.text();
+      console.log("razerpay hook", rawPayload, webhook_headers);
       const signature = webhook_headers["x-razorpay-signature"];
 
       const is_valid = await this.validateSignature({
         webhook_signature: signature,
         webhook_secret: config.RAZORPAY_HOOK_SECRET,
-        payload: JSON.stringify(webhook_payload),
+        payload: rawPayload, // pass raw payload directly
       });
       console.log(is_valid);
+      const webhook_payload = JSON.parse(rawPayload);
       await OrderController.handleRazorpayEvent(webhook_payload, is_valid);
 
       return ctx.json({
