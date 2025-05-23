@@ -13,7 +13,7 @@ productRoute.get(
   ProductController.getProductsBySubCategory
 );
 productRoute.get("/i/:product_id", ProductController.getProduct);
-// productRoute.get("/similarproducts/:id", ProductController.getProduct);
+productRoute.get("/similarproducts/:id", ProductController.getSimilarProducts);
 
 productRoute.use(authMiddleware());
 // discover new products route

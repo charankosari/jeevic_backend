@@ -3,6 +3,7 @@ import type { Context } from "hono";
 import { ProductService } from "../services/product.service";
 import { User } from "../models/user.model";
 import { UserService } from "../services/user.service";
+import { Product } from "../models/product.model";
 
 export class ProductController {
   public static readonly getProductsByCategory = async (ctx: Context) => {
@@ -305,6 +306,36 @@ export class ProductController {
         },
         500
       );
+    }
+  };
+  public static readonly getSimilarProducts = async (ctx: Context) => {
+    try {
+      const { id } = ctx.req.param(); // Get the product ID from the request parameters
+      const product = await Product.findById(id); // Find the product by ID
+
+      if (!product) {
+        return ctx.json({ success: false, message: "Product not found." }, 404);
+      }
+
+      const { category_id, subcategory_id } = product; // Extract category and subcategory IDs
+
+      // Fetch products by subcategory
+      // const subcategoryResult = await Product.find({subcategory_id: subcategory_id }); // Ensure this returns an array
+
+      // Fetch products by category
+      const categoryResult = await Product.find({ category_id:category_id }); // Ensure this returns an array
+
+// const subcategoryProducts = subcategoryResult.rows;
+const categoryProducts = categoryResult.rows;
+      // Combine and shuffle products, then select 12 random products
+      // const combinedProducts = [...(subcategoryProducts || []), ...(categoryProducts || [])];
+      const randomProducts = categoryProducts.sort(() => 0.5 - Math.random()).slice(0, 12);
+
+      return ctx.json({ success: true, data: randomProducts });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
     }
   };
 }
