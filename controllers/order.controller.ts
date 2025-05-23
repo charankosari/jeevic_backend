@@ -194,7 +194,7 @@ export class OrderController {
         total_amount,
         rzp_order_id: "",
         rzp_payment_id: "",
-        rzp_signature: "XXXX",
+        rzp_signature: config.RAZORPAY_HOOK_SECRET,
         status: "placed",
       });
       console.log(response);
@@ -236,7 +236,7 @@ export class OrderController {
     try {
       const webhook_headers = ctx.req.header();
       const webhook_payload = await ctx.req.json();
-
+      console.log("razerpay hook");
       const signature = webhook_headers["x-razorpay-signature"];
 
       const is_valid = await this.validateSignature({
