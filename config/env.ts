@@ -31,6 +31,7 @@ export const envSchema = z.object({
   SHIPROCKET_BASE_URL: z.string(),
   SHIPROCKET_EMAIL: z.string(),
   SHIPROCKET_PASSWORD: z.string(),
+  RAZORPAY_HOOK_SECRET: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

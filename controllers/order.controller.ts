@@ -9,7 +9,7 @@ import { GiftCardService } from "../services/giftcard.service";
 import { ProductService } from "../services/product.service";
 import { RazorpayService } from "../libs/payments/razorpay";
 import { SaleService } from "../services/sale.service";
-
+import { config } from "../config/env";
 export class OrderController {
   public static readonly getOrdersByUserID = async (ctx: Context) => {
     try {
@@ -241,7 +241,7 @@ export class OrderController {
 
       const is_valid = await this.validateSignature({
         webhook_signature: signature,
-        webhook_secret: "XXXX",
+        webhook_secret: config.RAZORPAY_HOOK_SECRET,
         payload: JSON.stringify(webhook_payload),
       });
 
