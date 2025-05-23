@@ -9,7 +9,7 @@ import { GiftCardService } from "../services/giftcard.service";
 import { ProductService } from "../services/product.service";
 import { RazorpayService } from "../libs/payments/razorpay";
 import { SaleService } from "../services/sale.service";
-import {getAllOrders,trackByOrder} from "../libs/shiprocket/shiprocket";
+import { getAllOrders, trackByOrder } from "../libs/shiprocket/shiprocket";
 import { config } from "../config/env";
 export class OrderController {
   public static readonly getOrdersByUserID = async (ctx: Context) => {
@@ -420,6 +420,7 @@ export class OrderController {
     try {
       const { orderId } = ctx.req.param();
       const trackingInfo = await trackByOrder(orderId);
+      console.log(trackingInfo);
       return ctx.json({ success: true, data: trackingInfo });
     } catch (error) {
       if (error instanceof Error) {
