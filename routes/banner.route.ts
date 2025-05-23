@@ -14,4 +14,14 @@ bannerRoute.patch("/updatemain/:id", BannersController.updateMainBanner);
 bannerRoute.get("/mainbanner", BannersController.getMainBanner);
 bannerRoute.delete("/mainbanner/:id", BannersController.deleteMainBanner);
 bannerRoute.delete("/mainbanner/all", BannersController.deleteAllMainBanners);
+
+bannerRoute.post("/createfeatured", BannersController.createFeaturedSection);
+bannerRoute.get("/featured", BannersController.getFeaturedSections);
+bannerRoute.delete("/featured/:id", BannersController.deleteFeaturedSection);
+bannerRoute.delete(
+  "/featured/all",
+  BannersController.deleteAllFeaturedSections
+);
+bannerRoute.patch("/featured/:id", BannersController.updateFeaturedSection);
+
 export { bannerRoute };

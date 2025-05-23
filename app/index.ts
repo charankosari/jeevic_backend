@@ -27,7 +27,7 @@ import { bannerRoute } from "../routes/banner.route";
 import { adminRoute } from "../routes/admin.route";
 import { messageRoute } from "../routes/message.route";
 import { promotionalRoute } from "../routes/promotion.route";
-
+import { featuredRoute } from "../routes/featured.route";
 const app = new Hono();
 
 app.use(logger());
@@ -73,6 +73,7 @@ app.route("/cafe/auth", cafeAuthRoute);
 app.route("/banner", bannerRoute);
 app.route("/message", messageRoute);
 app.route("/promotionalemails", promotionalRoute);
+app.route("/featured", featuredRoute);
 // admin routes
 
 app.route("/admin", adminRoute);

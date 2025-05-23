@@ -1,6 +1,7 @@
 import { type Context } from "hono";
 import { BannersService } from "../services/banners.service";
 import { type MBanner } from "../models/banners.model";
+import { FeaturedSectionModel } from "../models/banners.model";
 export class BannersController {
   public static readonly createBanner = async (ctx: Context) => {
     try {
@@ -189,6 +190,73 @@ export class BannersController {
           },
           400
         );
+      }
+    }
+  };
+  public static readonly createFeaturedSection = async (ctx: Context) => {
+    try {
+      const data = await ctx.req.json();
+      console.log("Data received:", data);
+      const newFeaturedSection = new FeaturedSectionModel(data);
+      console.log("Data:", newFeaturedSection);
+
+      await newFeaturedSection.save();
+      return ctx.json({ success: true, data: newFeaturedSection });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
+    }
+  };
+
+  public static readonly getFeaturedSections = async (ctx: Context) => {
+    try {
+      const featuredSections = await FeaturedSectionModel.find({});
+      return ctx.json({ success: true, data: featuredSections });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
+    }
+  };
+
+  public static readonly deleteFeaturedSection = async (ctx: Context) => {
+    try {
+      const { id } = ctx.req.param();
+      await FeaturedSectionModel.removeById(id);
+      return ctx.json({ success: true });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
+    }
+  };
+
+  public static readonly deleteAllFeaturedSections = async (ctx: Context) => {
+    try {
+      await FeaturedSectionModel.remove({});
+      return ctx.json({ success: true });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
+      }
+    }
+  };
+  public static readonly updateFeaturedSection = async (ctx: Context) => {
+    try {
+      const { id } = ctx.req.param();
+      const updateData = await ctx.req.json();
+
+      // Ensure updateData is not empty
+      if (Object.keys(updateData).length === 0) {
+        return ctx.json({ message: "No update data provided." }, 400);
+      }
+
+      const updatedSection = await FeaturedSectionModel.updateById(id, updateData);
+      return ctx.json({ success: true, data: updatedSection });
+    } catch (error) {
+      if (error instanceof Error) {
+        return ctx.json({ success: false, error: error.message }, 400);
       }
     }
   };

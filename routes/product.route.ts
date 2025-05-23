@@ -13,6 +13,8 @@ productRoute.get(
   ProductController.getProductsBySubCategory
 );
 productRoute.get("/i/:product_id", ProductController.getProduct);
+// productRoute.get("/similarproducts/:id", ProductController.getProduct);
+
 productRoute.use(authMiddleware());
 // discover new products route
 //just for you route
