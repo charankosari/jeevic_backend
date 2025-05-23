@@ -297,6 +297,9 @@ export class OrderController {
       }
       case "payment.captured": {
         await OrderController.handlePaymentCaptured(webhook_payload, is_valid);
+        const order_id =
+          webhook_payload.payload.payment.entity.notes.platform_order_id;
+        await OrderService.createShippingOrder(order_id);
         console.log("captured");
         break;
       }
