@@ -206,10 +206,6 @@ export class OrderService {
         //   breadth: product.breadth,
         //   height: product.height,
         //   weight: product.weight
-        length: 20,
-        breadth: 20,
-        height: 22,
-        weight: 2,
       };
     });
 
@@ -219,12 +215,24 @@ export class OrderService {
     ).toString();
 
     // Save new Shipping Order
+    const orderDate = new Date(order.created_at);
+    const formattedDate =
+      orderDate.getFullYear() +
+      "-" +
+      String(orderDate.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(orderDate.getDate()).padStart(2, "0") +
+      " " +
+      String(orderDate.getHours()).padStart(2, "0") +
+      ":" +
+      String(orderDate.getMinutes()).padStart(2, "0");
+
+    console.log(formattedDate);
     const shiprocketOrderData = {
       order_id: ship_order_id,
-      order_date: order.created_at,
-      pickup_location: "Main Warehouse",
+      order_date: orderDate,
+      pickup_location: "Home",
       billing_customer_name: address.name,
-      // billing_last_name: user.last_name || "",
       billing_address: address.address_line_1,
       billing_city: address.city,
       billing_pincode: address.postcode,
@@ -236,7 +244,10 @@ export class OrderService {
       order_items,
       payment_method: "Prepaid",
       sub_total: order.total_amount,
-      order_type: "adhoc",
+      length: 20,
+      breadth: 20,
+      height: 22,
+      weight: 2,
     };
     console.log(shiprocketOrderData);
     const response = await createOrder(shiprocketOrderData);
