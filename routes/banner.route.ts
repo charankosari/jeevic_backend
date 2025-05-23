@@ -9,7 +9,7 @@ bannerRoute.delete("/:id", BannersController.deleteBanner);
 bannerRoute.delete("/all", BannersController.deleteAllBanners);
 
 bannerRoute.post("/createmain", BannersController.createMainBanner);
-bannerRoute.patch("/updatemain", BannersController.updateMainBanner);
+bannerRoute.patch("/updatemain/:id", BannersController.updateMainBanner);
 
 bannerRoute.get("/mainbanner", BannersController.getMainBanner);
 bannerRoute.delete("/mainbanner/:id", BannersController.deleteMainBanner);

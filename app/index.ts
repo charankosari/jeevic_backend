@@ -70,7 +70,8 @@ app.route("/dine-in", dineInRoute);
 app.route("/upload", uploadRoute);
 app.route("/cafe/auth", cafeAuthRoute);
 app.route("/banner", bannerRoute);
-app.route("/message", messageRoute)
+app.route("/message", messageRoute);
+// app.route("/promotionalemails", promotionalRoute)
 // admin routes
 
 app.route("/admin", adminRoute);
