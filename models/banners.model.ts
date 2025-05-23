@@ -1,34 +1,65 @@
-import { Schema } from 'ottoman';
-import { ottoman } from '../config/ottoman';
+import { Schema } from "ottoman";
+import { ottoman } from "../config/ottoman";
 
 interface CBanner {
-	id: string;
-    image: string;
-    created_at?: Date;
-    updated_at?: Date;}
+  id: string;
+  image: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
 
-    interface EBanner {
-        id: string;
-        image: string;
-        created_at?: Date;
-        updated_at?: Date;}
+interface EBanner {
+  id: string;
+  image: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
+interface MBanner {
+  id: string;
+  image?: string;
+  video?: string;
+  text1: string;
+  text2?: string;
+  buttontext: string;
+  linkto: object;
+  created_at?: Date;
+  updated_at?: Date;
+}
 const CafeBannerSchema = new Schema({
-    id: String,
-    image: String,
-    created_at: { type: Date, default: () => new Date() },
-    updated_at: { type: Date, default: () => new Date() },
+  id: String,
+  image: String,
+  created_at: { type: Date, default: () => new Date() },
+  updated_at: { type: Date, default: () => new Date() },
 });
 const EcomBannerSchema = new Schema({
-    id: String,
-    image: String,
-    created_at: { type: Date, default: () => new Date() },
-    updated_at: { type: Date, default: () => new Date() },
+  id: String,
+  image: String,
+  created_at: { type: Date, default: () => new Date() },
+  updated_at: { type: Date, default: () => new Date() },
 });
+const mainBannerSchema = new Schema({
+  id: String,
+  image: String,
+  video: String,
+  text1: String,
+  text2: String,
+  buttontext: String,
+  linkto: Object,
+  created_at: { type: Date, default: () => new Date() },
+  updated_at: { type: Date, default: () => new Date() },
+});
+CafeBannerSchema.index.findByUserId = { by: "user_id" };
+EcomBannerSchema.index.findByUserId = { by: "user_id" };
 
-CafeBannerSchema.index.findByUserId = { by: 'user_id' };
-EcomBannerSchema.index.findByUserId = { by: 'user_id' };
+const MainBanner = ottoman.model<MBanner>("MBanner", mainBannerSchema);
+const CafeBanner = ottoman.model<CBanner>("CafeBanner", CafeBannerSchema);
+const EcomBanner = ottoman.model<EBanner>("EcomBanner", EcomBannerSchema); // Corrected model name
 
-const CafeBanner = ottoman.model<CBanner>('CafeBanner', CafeBannerSchema);
-const EcomBanner = ottoman.model<EBanner>('EcomBanner', EcomBannerSchema); // Corrected model name
-
-export { CafeBanner, EcomBanner, type CBanner, type EBanner };
+export {
+  CafeBanner,
+  EcomBanner,
+  MainBanner,
+  type MBanner,
+  type CBanner,
+  type EBanner,
+};
