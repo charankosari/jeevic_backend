@@ -28,6 +28,9 @@ export const envSchema = z.object({
   TWILIO_PHONE_NUMBER: z.string(),
   RENFLAIR_URL: z.string(),
   RENFLAIR_API: z.string(),
+  SHIPROCKET_BASE_URL: z.string(),
+  SHIPROCKET_EMAIL: z.string(),
+  SHIPROCKET_PASSWORD: z.string(),
 });
 
 export type Env = z.infer<typeof envSchema>;

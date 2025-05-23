@@ -48,11 +48,8 @@ export class OrderController {
     public static readonly createOrder = async (ctx: Context) => {
         try {
             const user_id = ctx.get('user_id');
-
             // Consider Free Shipping
             const shipping_amount = 0;
-
-
             const {
                 address_id,
                 coupon_code,
