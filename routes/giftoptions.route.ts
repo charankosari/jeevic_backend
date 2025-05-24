@@ -11,7 +11,7 @@ giftoptionRoute.use(authMiddleware());
 giftoptionRoute.get("/", GiftOptionsController.getGiftOptions);
 giftoptionRoute.get("/:giftoption_id", GiftOptionsController.getGiftOption);
 
-giftoptionRoute.use(roleMiddleware(["admin", "ecommerce_admin_admin"]));
+giftoptionRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 
 giftoptionRoute.post("/", GiftOptionsController.createGiftOption);
 giftoptionRoute.patch(

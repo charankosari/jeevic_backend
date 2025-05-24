@@ -364,6 +364,7 @@ export class OrderController {
       payload: {
         payment: {
           entity: {
+            id: string;
             notes: {
               platform_order_id: string;
             };
@@ -376,9 +377,11 @@ export class OrderController {
     // if (is_valid) {
     const order_id =
       webhook_payload.payload.payment.entity.notes.platform_order_id;
+    const payment_id = webhook_payload.payload.payment.entity.id;
     const { user_id } = await OrderService.updateOrder(order_id, {
       status: "completed",
       payment_status: "completed",
+      rzp_payment_id: payment_id,
     });
 
     // Clear Cart
