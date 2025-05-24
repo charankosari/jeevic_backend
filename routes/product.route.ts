@@ -14,6 +14,7 @@ productRoute.get(
 );
 productRoute.get("/i/:product_id", ProductController.getProduct);
 productRoute.get("/similarproducts/:id", ProductController.getSimilarProducts);
+productRoute.get("/fetch", ProductController.getProductsByIds);
 
 productRoute.use(authMiddleware());
 // discover new products route
@@ -21,7 +22,6 @@ productRoute.use(authMiddleware());
 productRoute.get("/justforyou", ProductController.getUserProducts);
 
 productRoute.get("/search", ProductController.searchProducts);
-productRoute.get("/fetch", ProductController.getProductsByIds);
 
 productRoute.use(roleMiddleware(["admin", "ecommerce_admin"]));
 
