@@ -6,15 +6,15 @@ import { roleMiddleware } from "../middlewares/role.middleware";
 
 const dishRoute = new Hono();
 
+dishRoute.get("/categories", DishController.getDishCategories);
+dishRoute.get("/dishes", DishController.getDishes);
+dishRoute.get("/i/:dish_id", DishController.getDishById);
 dishRoute.use(authMiddleware());
 
-dishRoute.get("/categories", DishController.getDishCategories);
 dishRoute.get(
   "/categories/:dish_category_id",
   DishController.getDishCategoryById
 );
-dishRoute.get("/i/:dish_id", DishController.getDishById);
-dishRoute.get("/dishes", DishController.getDishes);
 dishRoute.get(
   "/dishes/:dish_category_id",
   DishController.getDishesByCategoryId
