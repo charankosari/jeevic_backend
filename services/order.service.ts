@@ -3,6 +3,7 @@ import { Order, type IOrder } from "../models/order.model";
 import { User } from "../models/user.model";
 import { ProductService } from "./product.service";
 import { createOrder } from "../libs/shiprocket/shiprocket";
+import { EcomAdmin } from "../models/admin.model";
 export class OrderService {
   public static readonly getOrdersByUserID = async (
     user_id: string
@@ -154,7 +155,44 @@ export class OrderService {
     order_id: string
   ): Promise<void> => {
     // Get order products
+    function getDateKey(date = new Date()): string {
+      return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+    }
+
     const order = await this.getOrderById(order_id);
+    const result = await EcomAdmin.find({});
+    let ecomAdmin = result.rows[0];
+
+    // If admin doc doesn't exist, create an empty one
+    if (!ecomAdmin) {
+      ecomAdmin = new EcomAdmin({
+        id: "ecom_admin::1",
+        dailyProfits: {},
+        totalProfit: 0,
+        salesOfProducts: {},
+        salesOfCategories: {},
+        salesOfSubCategories: {},
+        revenueHistory: {},
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+    }
+    const this_day = new Date();
+    const today = getDateKey(this_day);
+    const orderProfit = order?.total_amount;
+    if (!ecomAdmin.dailyProfits[today]) {
+      ecomAdmin.dailyProfits[today] = 0;
+    }
+    ecomAdmin.dailyProfits[today] += orderProfit;
+    ecomAdmin.totalProfit += orderProfit;
+    const this_yesterday = new Date();
+    const yesterday = getDateKey(this_yesterday);
+    const yesterdayRevenue = ecomAdmin.revenueHistory[yesterday] || 0;
+
+    if (!ecomAdmin.revenueHistory[today]) {
+      ecomAdmin.revenueHistory[today] = yesterdayRevenue;
+    }
+    ecomAdmin.revenueHistory[today] += orderProfit;
 
     if (!order) {
       throw new Error("Order not found");
@@ -163,15 +201,40 @@ export class OrderService {
     // Update product stock
     for (const item of order.products) {
       const product = await ProductService.getProductById(item.product_id);
+      if (!product) throw new Error("Product not found");
 
-      if (!product) {
-        throw new Error("Product not found");
-      }
-
+      // Reduce product stock
       await ProductService.updateProduct(product.id, {
         availability_count: product.availability_count - item.quantity,
       });
+
+      const category = product.category_id;
+      const subcategory = product.subcategory_id;
+
+      // Update product sales
+      if (!ecomAdmin.salesOfProducts[product.name]) {
+        ecomAdmin.salesOfProducts[product.name] = 0;
+      }
+      ecomAdmin.salesOfProducts[product.name] += item.quantity;
+
+      // Update category sales
+      if (category) {
+        if (!ecomAdmin.salesOfCategories[category]) {
+          ecomAdmin.salesOfCategories[category] = 0;
+        }
+        ecomAdmin.salesOfCategories[category] += item.quantity;
+      }
+
+      // Update subcategory sales
+      if (subcategory) {
+        if (!ecomAdmin.salesOfSubCategories[subcategory]) {
+          ecomAdmin.salesOfSubCategories[subcategory] = 0;
+        }
+        ecomAdmin.salesOfSubCategories[subcategory] += item.quantity;
+      }
     }
+    ecomAdmin.updated_at = new Date();
+    await ecomAdmin.save();
   };
   public static async createShippingOrder(order_id: string) {
     const order = await this.getOrderById(order_id);
@@ -189,23 +252,31 @@ export class OrderService {
     const products = await ProductService.getProductsByIds(
       order.products.map((p) => p.product_id)
     );
-
+    let totalLength = 0;
+    let totalWeight = 0;
+    let maxBreadth = 0;
+    let maxHeight = 0;
     // Build order items
     const order_items = order.products.map((prod) => {
       const product = products.find((p) => p.id === prod.product_id);
       if (!product)
         throw new Error(`Product not found for id ${prod.product_id}`);
+      const quantity = prod.quantity;
 
+      // Length & Weight (sum, multiplied by quantity)
+      totalLength += (Number(product?.meta_data.length) || 0) * quantity;
+      totalWeight += (Number(product?.meta_data.weight) || 0) * quantity;
+      if (Number(product?.meta_data.breadth) > maxBreadth)
+        maxBreadth = Number(product?.meta_data.breadth);
+
+      if (Number(product?.meta_data.height) > maxHeight)
+        maxHeight = Number(product?.meta_data.height);
       return {
         name: product.name,
         //   sku: product.sku || product.id,
         sku: product.id,
         units: prod.quantity, // from order.products
         selling_price: prod.price, // from order.products
-        //   length: product.length,
-        //   breadth: product.breadth,
-        //   height: product.height,
-        //   weight: product.weight
       };
     });
 
@@ -250,10 +321,10 @@ export class OrderService {
       order_items,
       payment_method: "Prepaid",
       sub_total: order.total_amount,
-      length: 20,
-      breadth: 20,
-      height: 22,
-      weight: 2,
+      length: totalLength,
+      breadth: maxBreadth,
+      height: maxHeight,
+      weight: totalWeight,
     };
     console.log(shiprocketOrderData);
     const response = await createOrder(shiprocketOrderData);
