@@ -171,10 +171,8 @@ export class ProductService {
     product_ids: string[]
   ): Promise<IProduct[]> => {
     return await Product.find({
-      id: {
-        $in: product_ids,
-        is_active: true,
-      },
+      id: { $in: product_ids },
+      is_active: true,
     }).then((products) => {
       return products.rows;
     });
