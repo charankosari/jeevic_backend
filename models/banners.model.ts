@@ -43,6 +43,18 @@ interface FeaturedSection {
   created_at?: Date;
   updated_at?: Date;
 }
+interface CafeWebBanner {
+  id: string;
+  images: string[];
+  created_at?: Date;
+  updated_at?: Date;
+}
+const CafeWebBannerSchema = new Schema({
+  id: String,
+  images: { type: [String] },
+  created_at: { type: Date, default: () => new Date() },
+  updated_at: { type: Date, default: () => new Date() },
+});
 const CafeBannerSchema = new Schema({
   id: String,
   image: String,
@@ -96,14 +108,16 @@ const FeaturedSectionModel = ottoman.model<FeaturedSection>(
   "FeaturedSection",
   FeaturedSectionSchema
 );
-
+const CafeWebBannerModel = ottoman.model<CafeWebBanner>("CafeWebBanner", CafeWebBannerSchema);
 export {
   CafeBanner,
   EcomBanner,
   MainBanner,
   FeaturedSectionModel,
+  CafeWebBannerModel,
   type MBanner,
   type CBanner,
   type EBanner,
   type FeaturedSection,
+  type CafeWebBanner
 };

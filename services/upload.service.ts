@@ -5,7 +5,8 @@ const uploaderService = new Uploader(config.S3_BUCKET);
 
 export class UploaderService {
   public static readonly upload = async (file: File) => {
-    const newName = Date.now() + "-" + file.name;
+    const trimmedName = file.name.trim(); 
+    const newName = Date.now() + "-" + trimmedName;
     const url = await uploaderService.uploadFile("jv-uploads", newName, file);
     return {
       url,

@@ -1,7 +1,7 @@
 import { type Context } from "hono";
 import { BannersService } from "../services/banners.service";
 import { type MBanner } from "../models/banners.model";
-import { FeaturedSectionModel } from "../models/banners.model";
+import { FeaturedSectionModel,CafeWebBannerModel } from "../models/banners.model";
 export class BannersController {
   public static readonly createBanner = async (ctx: Context) => {
     try {
@@ -260,4 +260,64 @@ export class BannersController {
       }
     }
   };
+  public static async createCafeWebBanner(ctx: Context) {
+    try {
+      const data = await ctx.req.json();
+      const newBanner = new CafeWebBannerModel(data);
+      await newBanner.save();
+      return ctx.json({ success: true, data: newBanner });
+    } catch (error:any) {
+      return ctx.json({ success: false, message: error.message }, 400);
+    }
+  }
+
+  public static async getCafeAllWebBanner(ctx: Context) {
+    try {
+      const banners = await CafeWebBannerModel.find({});
+      return ctx.json({ success: true, data: banners });
+    } catch (error:any) {
+      return ctx.json({ success: false, message: error.message }, 400);
+    }
+  }
+
+  public static async getCafeWebBanner(ctx: Context) {
+    try {
+      const { id } = ctx.req.param();
+      const banner = await CafeWebBannerModel.findById(id);
+      if (!banner) {
+        return ctx.json({ success: false, message: "Banner not found" }, 404);
+      }
+      return ctx.json({ success: true, data: banner });
+    } catch (error:any) {
+      return ctx.json({ success: false, message: error.message }, 400);
+    }
+  }
+
+  public static async updateCafeWebBanner(ctx: Context) {
+    try {
+      const { id } = ctx.req.param();
+      const data = await ctx.req.json();
+      const banner = await CafeWebBannerModel.updateById(id, data);
+    if (!banner) {
+      return ctx.json({ success: false, message: "Banner not found" }, 404);
+    }
+     
+      return ctx.json({ success: true, data: banner });
+    } catch (error:any) {
+      return ctx.json({ success: false, message: error.message }, 400);
+    }
+  }
+
+  public static async deleteCafeWebBanner(ctx: Context) {
+    try {
+      const { id } = ctx.req.param();
+      const banner = await CafeWebBannerModel.findOneAndRemove({id});
+      if (!banner) {
+        return ctx.json({ success: false, message: "Banner not found" }, 404);
+      }
+      return ctx.json({ success: true, message: "Banner deleted successfully" });
+    } catch (error:any) {
+      return ctx.json({ success: false, message: error.message }, 400);
+    }
+  }
 }

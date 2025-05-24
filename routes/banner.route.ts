@@ -23,5 +23,10 @@ bannerRoute.delete(
   BannersController.deleteAllFeaturedSections
 );
 bannerRoute.patch("/featured/:id", BannersController.updateFeaturedSection);
-
+// cafe web banner
+bannerRoute.post("/createcafeweb", BannersController.createCafeWebBanner);
+bannerRoute.get("/cafeweb/:id", BannersController.getCafeWebBanner);
+bannerRoute.get("/cafeweb", BannersController.getCafeAllWebBanner);
+bannerRoute.patch("/cafeweb/:id", BannersController.updateCafeWebBanner);
+bannerRoute.delete("/cafeweb/:id", BannersController.deleteCafeWebBanner);
 export { bannerRoute };
