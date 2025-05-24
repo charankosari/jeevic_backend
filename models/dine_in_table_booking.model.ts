@@ -1,5 +1,5 @@
-import { Schema, Model, getModel } from 'ottoman';
-import { ottoman } from '../config/ottoman';
+import { Schema, Model, getModel } from "ottoman";
+import { ottoman } from "../config/ottoman";
 
 export interface IDineInTableBookings {
   id: string;
@@ -9,6 +9,8 @@ export interface IDineInTableBookings {
   booking_time: Date;
   from_time: Date;
   to_time?: Date | null;
+  name?: String;
+  phone?: String;
   number_of_people?: number;
   is_confirmed: boolean;
   is_cancelled: boolean;
@@ -19,26 +21,31 @@ export interface IDineInTableBookings {
 }
 
 const DineInTableBookingsSchema = new Schema({
-  table_id:         String,
-  user_id:          String,
-  booking_date:     Date,
-  booking_time:     Date,
-  from_time:        Date,
-  to_time:          Date, 
+  table_id: String,
+  user_id: String,
+  booking_date: Date,
+  booking_time: Date,
+  from_time: Date,
+  name: String,
+  phone: String,
+  to_time: Date,
   number_of_people: Number,
-  is_confirmed:     Boolean,
-  is_cancelled:     Boolean,
-  is_completed:     Boolean,
+  is_confirmed: Boolean,
+  is_cancelled: Boolean,
+  is_completed: Boolean,
   is_ready_to_bill: Boolean,
-  created_at:       { type: Date,    default: () => new Date() },
-  updated_at:       { type: Date,    default: () => new Date() },
+  created_at: { type: Date, default: () => new Date() },
+  updated_at: { type: Date, default: () => new Date() },
 });
 
 // Indexes
-DineInTableBookingsSchema.index.findByTableId = { by: 'table_id' };
-DineInTableBookingsSchema.index.findByUserId = { by: 'user_id' };
+DineInTableBookingsSchema.index.findByTableId = { by: "table_id" };
+DineInTableBookingsSchema.index.findByUserId = { by: "user_id" };
 
 // Model definition
-const DineInTableBookings = ottoman.model('dine_in_table_bookings', DineInTableBookingsSchema);
+const DineInTableBookings = ottoman.model(
+  "dine_in_table_bookings",
+  DineInTableBookingsSchema
+);
 
 export { DineInTableBookings };

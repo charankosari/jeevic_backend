@@ -135,6 +135,8 @@ export class DineInService {
     from_time,
     to_time,
     number_of_people,
+    name,
+    phone,
   }: {
     table_id?: string; // <-- Make optional
     user_id: string;
@@ -146,6 +148,8 @@ export class DineInService {
     is_confirmed?: boolean;
     is_cancelled?: boolean;
     is_completed?: boolean;
+    name?: string;
+    phone?: string;
   }): Promise<IDineInTableBookings> => {
     // Only check for conflicts if table_id is provided
     if (table_id) {
@@ -194,6 +198,8 @@ export class DineInService {
       booking_date,
       booking_time,
       from_time,
+      name,
+      phone,
       to_time,
       number_of_people,
       is_confirmed: true,

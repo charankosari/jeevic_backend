@@ -203,6 +203,8 @@ export class DineInController {
         from_time,
         to_time,
         number_of_people,
+        name,
+        phone,
       } = await c.req.json();
 
       const booking = await DineInService.createBooking({
@@ -213,6 +215,8 @@ export class DineInController {
         from_time,
         to_time,
         number_of_people,
+        name,
+        phone,
       });
       return c.json({
         success: true,
@@ -901,7 +905,7 @@ export class DineInController {
   public static readonly getReservations = async (c: Context) => {
     try {
       const { page, limit } = c.req.query();
-      const pageNumber = parseInt(page) || 0;
+      const pageNumber = parseInt(page) || 1;
       const limitNumber = parseInt(limit) || 10;
       const data = await DineInService.getReservations(pageNumber, limitNumber);
       return c.json({
