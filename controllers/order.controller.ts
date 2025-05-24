@@ -83,17 +83,25 @@ export class OrderController {
       for (const item of cartItems) {
         const product = await ProductService.getProductById(item.product_id);
 
-        if (product) {
-          const price = product.price;
-          order_value += price * item.quantity;
-
-          products.push({
-            product_id: product.id,
-            quantity: item.quantity,
-            price: product.price,
-            meta_data: product.meta_data,
-          });
+        if (!product) {
+          throw new Error(`Product with id ${item.product_id} not found`);
         }
+
+        if (product.availability_count < item.quantity) {
+          throw new Error(
+            `Only ${product.availability_count} items available for product "${product.name}"`
+          );
+        }
+
+        const price = product.price;
+        order_value += price * item.quantity;
+
+        products.push({
+          product_id: product.id,
+          quantity: item.quantity,
+          price: product.price,
+          meta_data: product.meta_data,
+        });
       }
 
       let discount_amount = 0;

@@ -10,6 +10,16 @@ export class CartService {
     quantity: number,
     meta_data: Record<string, string>
   ): Promise<string> => {
+    const product = await ProductService.getProductById(product_id);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    if (product.availability_count < quantity) {
+      throw new Error(
+        `Only ${product.availability_count} items available for this product`
+      );
+    }
     const data = await Cart.create({
       user_id,
       product_id,
@@ -67,6 +77,16 @@ export class CartService {
     quantity: number,
     meta_data: Record<string, string>
   ): Promise<void> => {
+    const product = await ProductService.getProductById(product_id);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    if (product.availability_count < quantity) {
+      throw new Error(
+        `Only ${product.availability_count} items available for this product`
+      );
+    }
     await Cart.updateMany(
       {
         user_id,
