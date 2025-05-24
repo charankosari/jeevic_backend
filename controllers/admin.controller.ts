@@ -8,6 +8,10 @@ import {
   type IDishCategory,
 } from "../models/dish_category.model";
 import { Dish, type IDish } from "../models/dish.model";
+import { Product } from "../models/product.model";
+import { Category } from "../models/category.model";
+import { SubCategory } from "../models/subcategory.model";
+import { ecomAdminService } from "../services/ecom.admin.service";
 export class AdminController {
   public static readonly getUsers = async (c: Context) => {
     try {
@@ -331,6 +335,152 @@ export class AdminController {
             ninetyDays: filterRange(stats90.peakHours, 90),
           },
           // AFTER — take the service’s already-filtered windows directly
+          revenueHistory: {
+            sevenDays: filterRange(stats7.revenueHistory, 7),
+            thirtyDays: filterRange(stats30.revenueHistory, 30),
+            ninetyDays: filterRange(stats90.revenueHistory, 90),
+          },
+        },
+      });
+    } catch (err) {
+      return c.json(
+        {
+          success: false,
+          message:
+            err instanceof Error
+              ? err.message
+              : "Failed to fetch admin statistics",
+        },
+        500
+      );
+    }
+  };
+  public static readonly ecomGetAdminStats = async (c: Context) => {
+    try {
+      const stats7 = await ecomAdminService.getAdminStats(7);
+      const stats30 = await ecomAdminService.getAdminStats(30);
+      const stats90 = await ecomAdminService.getAdminStats(90);
+
+      const currentDate = new Date();
+
+      const { rows: products } = await Product.find({});
+      const { rows: categories } = await Category.find({});
+      const { rows: subcategories } = await SubCategory.find({});
+
+      function filterRange<T>(data: Record<string, T>, days: number) {
+        const start = new Date();
+        start.setDate(currentDate.getDate() - days);
+        const filteredData = Object.entries(data)
+          .filter(([dateStr]) => {
+            const [d, m, y] = dateStr.split("-").map(Number);
+            const dt = new Date(y, m - 1, d);
+            return dt >= start && dt <= currentDate;
+          })
+          .reduce(
+            (acc, [k, v]) => {
+              acc[k] = v;
+              return acc;
+            },
+            {} as Record<string, T>
+          );
+
+        const sortedKeys = Object.keys(filteredData).sort((a, b) => {
+          const [d1, m1, y1] = a.split("-").map(Number);
+          const [d2, m2, y2] = b.split("-").map(Number);
+          return (
+            new Date(y2, m2 - 1, d2).getTime() -
+            new Date(y1, m1 - 1, d1).getTime()
+          );
+        });
+
+        return sortedKeys.slice(0, days).reduce(
+          (acc, key) => {
+            acc[key] = filteredData[key];
+            return acc;
+          },
+          {} as Record<string, T>
+        );
+      }
+
+      const profitPercentage = (() => {
+        const todayKey = (() => {
+          const d = currentDate.getDate();
+          const m = currentDate.getMonth() + 1;
+          const y = currentDate.getFullYear();
+          return `${d}-${m}-${y}`;
+        })();
+
+        const daysKeys = Object.keys(stats7.dailyProfits).sort((a, b) => {
+          const [d1, m1, y1] = a.split("-").map(Number);
+          const [d2, m2, y2] = b.split("-").map(Number);
+          return (
+            new Date(y2, m2 - 1, d2).getTime() -
+            new Date(y1, m1 - 1, d1).getTime()
+          );
+        });
+
+        const [latest, prev] = daysKeys;
+        const curr = stats7.dailyProfits[latest] ?? 0;
+        const prevVal = stats7.dailyProfits[prev] ?? 0;
+        if (prevVal === 0) return "0";
+        return (((curr - prevVal) / prevVal) * 100).toFixed(2);
+      })();
+
+      const salesOfProducts = Object.entries(stats7.salesOfProducts).map(
+        ([productId, count]) => {
+          const product = products.find((p: any) => p.id === productId);
+          return {
+            product: {
+              id: product?.id ?? productId,
+              name: product?.name ?? "Unknown",
+              price: product?.price ?? 0,
+              image_url: product?.image_url?.[0] ?? null,
+            },
+            count,
+          };
+        }
+      );
+
+      const salesOfCategories = Object.entries(stats7.salesOfCategories).map(
+        ([categoryId, count]) => {
+          const category = categories.find((c: any) => c.id === categoryId);
+          return {
+            category: {
+              id: category?.id ?? categoryId,
+              name: category?.name ?? "Unknown",
+              image_url: category?.image_url?.[0] ?? null,
+            },
+            count,
+          };
+        }
+      );
+
+      const salesOfSubCategories = Object.entries(
+        stats7.salesOfSubCategories
+      ).map(([subcategoryId, count]) => {
+        const subcategory = subcategories.find(
+          (sc: any) => sc.id === subcategoryId
+        );
+        return {
+          subcategory: {
+            id: subcategory?.id ?? subcategoryId,
+            name: subcategory?.name ?? "Unknown",
+            image_url: subcategory?.image_url?.[0] ?? null,
+          },
+          count,
+        };
+      });
+
+      return c.json({
+        success: true,
+        data: {
+          date: currentDate.toLocaleDateString("en-GB").split("/").join("-"),
+          dailyProfits: stats7.dailyProfits,
+          totalProfit: stats7.totalProfit,
+          profitPercentage,
+          salesOfProducts,
+          salesOfCategories,
+          salesOfSubCategories,
           revenueHistory: {
             sevenDays: filterRange(stats7.revenueHistory, 7),
             thirtyDays: filterRange(stats30.revenueHistory, 30),

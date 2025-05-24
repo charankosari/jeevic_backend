@@ -431,7 +431,6 @@ export class OrderController {
     try {
       const { orderId } = ctx.req.param();
       const trackingInfo = await trackByOrder(orderId);
-      console.log(trackingInfo);
       return ctx.json({ success: true, data: trackingInfo });
     } catch (error) {
       if (error instanceof Error) {

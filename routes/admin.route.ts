@@ -15,6 +15,7 @@ adminRoute.delete("/staff/:staff_id", AdminController.deleteEmployee);
 adminRoute.patch("/staff/:staff_id", AdminController.updateEmployee);
 adminRoute.get("/ecomusers", AuthController.getAllUsers);
 adminRoute.delete("/ecomusers/:user_id", AuthController.deleteUserById);
+adminRoute.get("/allecomstats", AdminController.ecomGetAdminStats);
 adminRoute.use(roleMiddleware(["admin", "cafe_admin"]));
 adminRoute.get("/users", cafeAuthController.getUsers);
 adminRoute.get("/allstats", AdminController.getAdminStats);

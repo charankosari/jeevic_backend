@@ -212,10 +212,10 @@ export class OrderService {
       const subcategory = product.subcategory_id;
 
       // Update product sales
-      if (!ecomAdmin.salesOfProducts[product.name]) {
-        ecomAdmin.salesOfProducts[product.name] = 0;
+      if (!ecomAdmin.salesOfProducts[product.id]) {
+        ecomAdmin.salesOfProducts[product.id] = 0;
       }
-      ecomAdmin.salesOfProducts[product.name] += item.quantity;
+      ecomAdmin.salesOfProducts[product.id] += item.quantity;
 
       // Update category sales
       if (category) {
@@ -326,9 +326,7 @@ export class OrderService {
       height: maxHeight,
       weight: totalWeight,
     };
-    console.log(shiprocketOrderData);
     const response = await createOrder(shiprocketOrderData);
-    console.log(response);
     // Update existing Order with ship_order_id
     await Order.updateMany({ id: order.id }, { ship_order_id: ship_order_id });
     return response;
