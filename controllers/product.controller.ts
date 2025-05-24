@@ -18,6 +18,7 @@ export class ProductController {
       const productFilter: {
         category_id: string;
         subcategory_id?: string;
+        is_active?: true;
       } = {
         category_id,
       };
@@ -284,7 +285,10 @@ export class ProductController {
       return ctx.json(
         {
           success: false,
-          message: error instanceof Error ? error.message : "Failed to fetch latest products",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch latest products",
         },
         500
       );
@@ -302,7 +306,10 @@ export class ProductController {
       return ctx.json(
         {
           success: false,
-          message: error instanceof Error ? error.message : "Failed to fetch recommended products",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch recommended products",
         },
         500
       );
@@ -323,13 +330,15 @@ export class ProductController {
       // const subcategoryResult = await Product.find({subcategory_id: subcategory_id }); // Ensure this returns an array
 
       // Fetch products by category
-      const categoryResult = await Product.find({ category_id:category_id }); // Ensure this returns an array
+      const categoryResult = await Product.find({ category_id: category_id }); // Ensure this returns an array
 
-// const subcategoryProducts = subcategoryResult.rows;
-const categoryProducts = categoryResult.rows;
+      // const subcategoryProducts = subcategoryResult.rows;
+      const categoryProducts = categoryResult.rows;
       // Combine and shuffle products, then select 12 random products
       // const combinedProducts = [...(subcategoryProducts || []), ...(categoryProducts || [])];
-      const randomProducts = categoryProducts.sort(() => 0.5 - Math.random()).slice(0, 12);
+      const randomProducts = categoryProducts
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 12);
 
       return ctx.json({ success: true, data: randomProducts });
     } catch (error) {
