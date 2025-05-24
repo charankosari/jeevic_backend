@@ -336,7 +336,8 @@ export class ProductController {
       const categoryProducts = categoryResult.rows;
       // Combine and shuffle products, then select 12 random products
       // const combinedProducts = [...(subcategoryProducts || []), ...(categoryProducts || [])];
-      const randomProducts = categoryProducts
+      const filteredProducts = categoryProducts.filter((p: any) => p.id !== id);
+      const randomProducts = filteredProducts
         .sort(() => 0.5 - Math.random())
         .slice(0, 12);
 
